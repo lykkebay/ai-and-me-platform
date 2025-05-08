@@ -349,6 +349,12 @@ def create_header():
 def home_page():
     # Hero Section
     st.markdown("""
+    <style>
+        .hero h1 {
+            color: white;
+        }
+    </style>
+
     <div class="hero">
         <h1>AI & Me: Understand, Question, Influence</h1>
         <p>A civic platform empowering Amsterdam citizens to understand how AI is used in their city, question how it might affect them, and influence how it evolves.</p>
