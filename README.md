@@ -1,17 +1,14 @@
 
 # AI & Me: Citizen Empowerment Platform
 
-A civic platform empowering Amsterdam citizens to understand, question, and influence AI systems in their city.
+The AI & Me platform is designed to help Amsterdam citizens understand, question, and influence AI systems in their city.
 
-## Features
+## Setup Instructions
 
-- Human-centered explanations of AI systems
-- Trust indicators for transparency
-- Citizen feedback collection
-- Interactive AI simulators
-- Co-design sessions
+### Prerequisites
+- Python 3.8 or higher
 
-## How to Run
+### Installation
 
-1. Install the requirements: `pip install -r requirements.txt`
-2. Run the app: `streamlit run app.py`
+1. Clone this repository or download the files
+2. Install the required packages:
