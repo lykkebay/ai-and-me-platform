@@ -1,1723 +1,1813 @@
+# AI_and_Me_Platform.py
+# Streamlit application for AI & Me: Citizen Empowerment Platform
 
 import streamlit as st
-from streamlit_option_menu import option_menu
 import pandas as pd
-from datetime import datetime
+import numpy as np
+import matplotlib.pyplot as plt
+import seaborn as sns
+import plotly.express as px
+import plotly.graph_objects as go
+from datetime import datetime, timedelta
 import random
+import json
+import base64
+from PIL import Image
+import io
 
 # Set page configuration
 st.set_page_config(
-    page_title="AI & Me | Gemeente Amsterdam",
-    page_icon="🔍",
-    layout="wide"
+    page_title="AI & Me: Citizen Empowerment Platform",
+    page_icon="🤖",
+    layout="wide",
+    initial_sidebar_state="expanded"
 )
 
-# Custom CSS to match the design
-st.markdown("""
-<style>
-    /* General styling */
-    [data-testid="stAppViewContainer"] {
-        font-family: 'Inter', sans-serif;
-    }
-    
-    /* Header styling */
-    header {
-        background-color: white;
-        border-bottom: 1px solid #e5e7eb;
-    }
-    
-    /* Hero section */
-    .hero {
-        background: linear-gradient(to bottom, #dc2626, #b91c1c);
-        color: white;
-        padding: 4rem 2rem;
-        border-radius: 0;
-        text-align: center;
-        margin: -4rem -4rem 2rem -4rem;
-    }
-    
-    .hero h1 {
-        font-size: 3rem;
-        font-weight: 700;
-        margin-bottom: 1rem;
-    }
-    
-    .hero p {
-        font-size: 1.25rem;
-        margin-bottom: 2rem;
-        max-width: 800px;
-        margin-left: auto;
-        margin-right: auto;
-    }
-    
-    /* Button styling */
-    .primary-button {
-        background-color: white;
-        color: #b91c1c;
-        padding: 0.75rem 1.5rem;
-        border-radius: 0.375rem;
-        font-weight: 600;
-        text-decoration: none;
-        display: inline-block;
-        margin-right: 0.5rem;
-        border: none;
-    }
-    
-    .primary-button:hover {
-        background-color: #f3f4f6;
-    }
-    
-    .outline-button {
-        background-color: transparent;
-        color: white;
-        padding: 0.75rem 1.5rem;
-        border-radius: 0.375rem;
-        font-weight: 600;
-        text-decoration: none;
-        display: inline-block;
-        border: 1px solid white;
-    }
-    
-    .outline-button:hover {
-        background-color: rgba(255, 255, 255, 0.1);
-    }
-    
-    /* Card styling */
-    .card {
-        background-color: white;
-        border-radius: 0.5rem;
-        padding: 1.5rem;
-        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-        margin-bottom: 1rem;
-        border: 1px solid #e5e7eb;
-    }
-    
-    .pillar-card {
-        height: 100%;
-        display: flex;
-        flex-direction: column;
-    }
-    
-    .pillar-card h3 {
-        font-size: 1.25rem;
-        font-weight: 600;
-        margin-top: 1rem;
-        margin-bottom: 0.5rem;
-    }
-    
-    .pillar-card p {
-        color: #6b7280;
-        margin-bottom: 1rem;
-        flex-grow: 1;
-    }
-    
-    .pillar-card-button {
-        background-color: transparent;
-        color: #111827;
-        padding: 0.5rem 1rem;
-        border-radius: 0.375rem;
-        font-weight: 500;
-        text-decoration: none;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        border: 1px solid #e5e7eb;
-        width: 100%;
-        margin-top: auto;
-    }
-    
-    .pillar-card-button:hover {
-        background-color: #f9fafb;
-    }
-    
-    /* Concern card */
-    .concern-card h3 {
-        font-size: 1.125rem;
-        font-weight: 600;
-        color: #dc2626;
-        margin-bottom: 0.5rem;
-    }
-    
-    .concern-card p {
-        color: #6b7280;
-    }
-    
-    /* Section styling */
-    .section {
-        padding: 4rem 0;
-    }
-    
-    .section-title {
-        font-size: 1.875rem;
-        font-weight: 700;
-        text-align: center;
-        margin-bottom: 3rem;
-    }
-    
-    .bg-muted {
-        background-color: #f9fafb;
-        margin: 2rem -4rem;
-        padding: 4rem;
-    }
-    
-    /* Badge styling */
-    .badge {
-        display: inline-block;
-        padding: 0.25rem 0.5rem;
-        border-radius: 9999px;
-        font-size: 0.75rem;
-        font-weight: 500;
-        margin-right: 0.5rem;
-        margin-bottom: 0.5rem;
-    }
-    
-    .badge-secondary {
-        background-color: #e5e7eb;
-        color: #1f2937;
-    }
-    
-    .badge-red {
-        background-color: #fee2e2;
-        color: #b91c1c;
-        border: 1px solid #fecaca;
-    }
-    
-    .badge-yellow {
-        background-color: #fef3c7;
-        color: #92400e;
-        border: 1px solid #fde68a;
-    }
-    
-    .badge-green {
-        background-color: #d1fae5;
-        color: #047857;
-        border: 1px solid #a7f3d0;
-    }
-    
-    /* Algorithm card */
-    .algorithm-card {
-        height: 100%;
-        display: flex;
-        flex-direction: column;
-    }
-    
-    .algorithm-card-header {
-        display: flex;
-        justify-content: space-between;
-        margin-bottom: 0.75rem;
-    }
-    
-    .algorithm-card h3 {
-        font-size: 1.25rem;
-        font-weight: 600;
-        margin-bottom: 0.5rem;
-    }
-    
-    .algorithm-card p {
-        color: #6b7280;
-        margin-bottom: 1rem;
-        flex-grow: 1;
-    }
-    
-    .algorithm-card-button {
-        background-color: transparent;
-        color: #111827;
-        padding: 0.5rem 1rem;
-        border-radius: 0.375rem;
-        font-weight: 500;
-        text-decoration: none;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        border: 1px solid #e5e7eb;
-        width: 100%;
-        margin-top: auto;
-    }
-    
-    /* Trust indicator */
-    .trust-indicator {
-        margin-bottom: 1rem;
-    }
-    
-    .trust-indicator-header {
-        display: flex;
-        justify-content: space-between;
-        margin-bottom: 0.5rem;
-    }
-    
-    .trust-indicator-bar {
-        height: 0.5rem;
-        background-color: #e5e7eb;
-        border-radius: 9999px;
-        margin-bottom: 0.5rem;
-    }
-    
-    .trust-indicator-fill {
-        height: 100%;
-        border-radius: 9999px;
-    }
-    
-    .trust-indicator-description {
-        font-size: 0.875rem;
-        color: #6b7280;
-    }
-    
-    /* Feedback form */
-    .form-group {
-        margin-bottom: 1.5rem;
-    }
-    
-    .form-label {
-        display: block;
-        margin-bottom: 0.5rem;
-        font-weight: 500;
-    }
-    
-    /* Footer */
-    .footer {
-        border-top: 1px solid #e5e7eb;
-        padding: 1.5rem 0;
-        margin-top: 2rem;
-    }
-    
-    /* Icons */
-    .icon {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        width: 2.5rem;
-        height: 2.5rem;
-        border-radius: 0.375rem;
-        margin-bottom: 0.5rem;
-    }
-    
-    .icon-red {
-        color: #dc2626;
-    }
-    
-    /* Tabs styling */
-    .stTabs [data-baseweb="tab-list"] {
-        gap: 1px;
-    }
+# ===============================
+# 1. SAMPLE DATA INITIALIZATION
+# ===============================
 
-    .stTabs [data-baseweb="tab"] {
-        height: 2.5rem;
-        white-space: pre-wrap;
-        background-color: white;
-        border-radius: 0.375rem;
-        border: 1px solid #e5e7eb;
-        margin-right: 0.5rem;
-    }
-
-    .stTabs [aria-selected="true"] {
-        background-color: #f3f4f6;
-    }
-    
-    /* Hide Streamlit branding */
-    #MainMenu, footer, header {
-        visibility: hidden;
-    }
-    
-    /* Responsive adjustments */
-    @media (max-width: 768px) {
-        .hero {
-            padding: 3rem 1rem;
+# Create sample AI systems data
+def create_ai_systems_data():
+    systems = [
+        {
+            "id": 1,
+            "title": "Housing Allocation Assistant",
+            "description": "AI system that helps prioritize social housing applications based on various factors including waiting time, household composition, and special circumstances.",
+            "department": "Housing",
+            "risk_level": "high",
+            "last_updated": "2023-04-15",
+            "data_used": [
+                "Household composition",
+                "Current housing situation",
+                "Income level",
+                "Time on waiting list",
+                "Special circumstances (medical, social)",
+                "Neighborhood preference"
+            ],
+            "rights": [
+                "Request human review of decisions",
+                "Appeal automated decisions",
+                "Access your data used in the system",
+                "Request explanation of specific decisions"
+            ],
+            "audit_info": {
+                "last_audit": "February 2023",
+                "audited_by": "Independent Housing Algorithm Review Board",
+                "bias_tested": True,
+                "citizen_consulted": True
+            },
+            "feedback_count": 87
+        },
+        {
+            "id": 2,
+            "title": "Traffic Flow Optimization",
+            "description": "AI system that adjusts traffic lights to reduce congestion and improve traffic flow throughout the city.",
+            "department": "Transportation",
+            "risk_level": "low",
+            "last_updated": "2023-03-10",
+            "data_used": [
+                "Real-time traffic camera data",
+                "Historical traffic patterns",
+                "Public transport schedules",
+                "Special events information"
+            ],
+            "rights": [
+                "Access to traffic optimization logic",
+                "Submit feedback on traffic flow issues"
+            ],
+            "audit_info": {
+                "last_audit": "January 2023",
+                "audited_by": "City Transportation Department",
+                "bias_tested": True,
+                "citizen_consulted": False
+            },
+            "feedback_count": 24
+        },
+        {
+            "id": 3,
+            "title": "Fraud Detection System",
+            "description": "Identifies potential fraud in benefit applications and flags cases for human review.",
+            "department": "Social Services",
+            "risk_level": "high",
+            "last_updated": "2023-02-20",
+            "data_used": [
+                "Application information",
+                "Historical case data",
+                "Cross-referenced public records",
+                "Previous applications"
+            ],
+            "rights": [
+                "Right to human review",
+                "Right to explanation",
+                "Right to contest automated decisions",
+                "Right to correct inaccurate data"
+            ],
+            "audit_info": {
+                "last_audit": "December 2022",
+                "audited_by": "Independent Ethics Committee",
+                "bias_tested": True,
+                "citizen_consulted": True
+            },
+            "feedback_count": 56
+        },
+        {
+            "id": 4,
+            "title": "Public Space Monitoring",
+            "description": "Analyzes camera feeds to detect crowding and incidents in public spaces.",
+            "department": "Public Safety",
+            "risk_level": "medium",
+            "last_updated": "2023-01-15",
+            "data_used": [
+                "Anonymized video feeds",
+                "Crowd density patterns",
+                "Weather data",
+                "Event schedules"
+            ],
+            "rights": [
+                "Right to privacy in public spaces",
+                "Right to know about monitoring",
+                "Right to access monitoring policies"
+            ],
+            "audit_info": {
+                "last_audit": "November 2022",
+                "audited_by": "Privacy Commission",
+                "bias_tested": True,
+                "citizen_consulted": False
+            },
+            "feedback_count": 43
+        },
+        {
+            "id": 5,
+            "title": "Waste Collection Routing",
+            "description": "Optimizes garbage collection routes based on fill levels and historical patterns.",
+            "department": "Sanitation",
+            "risk_level": "low",
+            "last_updated": "2023-05-05",
+            "data_used": [
+                "Bin fill level sensors",
+                "Historical collection data",
+                "Traffic conditions",
+                "Weather forecasts"
+            ],
+            "rights": [
+                "Access to collection schedules",
+                "Request special collections"
+            ],
+            "audit_info": {
+                "last_audit": "March 2023",
+                "audited_by": "Sanitation Department",
+                "bias_tested": False,
+                "citizen_consulted": True
+            },
+            "feedback_count": 12
+        },
+        {
+            "id": 6,
+            "title": "Energy Usage Optimization",
+            "description": "Manages energy usage in public buildings to reduce consumption and costs.",
+            "department": "Sustainability",
+            "risk_level": "low",
+            "last_updated": "2023-04-20",
+            "data_used": [
+                "Real-time energy consumption",
+                "Building occupancy data",
+                "Weather conditions",
+                "Historical usage patterns"
+            ],
+            "rights": [
+                "Access to energy usage data",
+                "Submit suggestions for improvement"
+            ],
+            "audit_info": {
+                "last_audit": "January 2023",
+                "audited_by": "Energy Efficiency Board",
+                "bias_tested": False,
+                "citizen_consulted": False
+            },
+            "feedback_count": 8
         }
-        
-        .hero h1 {
-            font-size: 2.25rem;
-        }
-        
-        .section {
-            padding: 2rem 0;
-        }
-    }
-</style>
-""", unsafe_allow_html=True)
+    ]
+    return pd.DataFrame(systems)
 
-# Navigation
-def create_header():
-    col1, col2 = st.columns([1, 3])
-    with col1:
-        st.markdown("""
-        <div style="display: flex; align-items: center; gap: 0.5rem;">
-            <div style="background-color: #dc2626; color: white; padding: 0.25rem 0.5rem; border-radius: 0.375rem; font-weight: 700;">A'dam</div>
-            <span style="font-weight: 700; font-size: 1.125rem;">AI & Me</span>
-        </div>
-        """, unsafe_allow_html=True)
+# Create sample citizen concerns data
+def create_citizen_concerns():
+    concerns = [
+        {"id": 1, "category": "Powerlessness", "description": "I feel powerless to influence how AI is used in my city.", "count": 142},
+        {"id": 2, "category": "Lack of Transparency", "description": "I am concerned AI is used without my knowledge.", "count": 98},
+        {"id": 3, "category": "Social Inequality", "description": "I worry AI reinforces existing social inequality.", "count": 76},
+        {"id": 4, "category": "Privacy", "description": "I'm afraid of being watched or profiled.", "count": 65},
+        {"id": 5, "category": "Explainability", "description": "I want explanations I can understand.", "count": 54}
+    ]
+    return pd.DataFrame(concerns)
 
-# Create pages
-def home_page():
-    # Hero Section
+# Create sample citizen feedback data
+def create_feedback_data():
+    # Generate random dates within the last 3 months
+    today = datetime.now()
+    dates = [(today - timedelta(days=random.randint(1, 90))).strftime("%Y-%m-%d") for _ in range(200)]
+    
+    # Generate random feedback for different systems
+    systems = [1, 2, 3, 4, 5, 6]
+    system_ids = [random.choice(systems) for _ in range(200)]
+    
+    # Generate sentiment
+    sentiments = ["positive", "negative", "neutral", "confused", "concerned"]
+    sentiment_weights = [0.2, 0.4, 0.15, 0.15, 0.1]  # More negative feedback than positive
+    feedback_sentiments = [np.random.choice(sentiments, p=sentiment_weights) for _ in range(200)]
+    
+    # Generate feedback text
+    feedback_texts = [
+        "The system works well for my needs.",
+        "I don't understand how decisions are made.",
+        "This seems biased against certain groups.",
+        "The explanation was clear and helpful.",
+        "I'm concerned about my privacy with this system.",
+        "The system is too slow to respond.",
+        "I appreciate the transparency in how this works.",
+        "This system seems to favor certain neighborhoods.",
+        "I couldn't find information about how my data is used.",
+        "The decision made in my case seemed unfair."
+    ]
+    
+    # Create DataFrame
+    feedback_df = pd.DataFrame({
+        "id": range(1, 201),
+        "system_id": system_ids,
+        "date": dates,
+        "sentiment": feedback_sentiments,
+        "feedback_text": [random.choice(feedback_texts) for _ in range(200)],
+        "resolved": [random.choice([True, False]) for _ in range(200)]
+    })
+    
+    return feedback_df
+
+# Create sample co-design sessions
+def create_codesign_sessions():
+    sessions = [
+        {
+            "id": 1,
+            "title": "Housing Allocation Algorithm Redesign",
+            "date": "2023-06-15",
+            "time": "18:00-20:00",
+            "location": "Public Library Amsterdam, Main Branch",
+            "spots_left": 10,
+            "system_id": 1,
+            "description": "Help us redesign aspects of the Housing Allocation Algorithm to better serve all citizens."
+        },
+        {
+            "id": 2,
+            "title": "Public Space Monitoring Ethics Workshop",
+            "date": "2023-06-22",
+            "time": "13:00-16:00",
+            "location": "De Balie, Kleine-Gartmanplantsoen",
+            "spots_left": 0,
+            "system_id": 4,
+            "description": "Discuss ethical considerations in public space monitoring and help establish guidelines."
+        },
+        {
+            "id": 3,
+            "title": "Traffic Management AI Feedback Session",
+            "date": "2023-07-05",
+            "time": "17:00-19:00",
+            "location": "Online (Zoom)",
+            "spots_left": 25,
+            "system_id": 2,
+            "description": "Provide feedback on the traffic management system and suggest improvements."
+        },
+        {
+            "id": 4,
+            "title": "Fraud Detection Fairness Workshop",
+            "date": "2023-07-12",
+            "time": "14:00-17:00",
+            "location": "Amsterdam City Hall",
+            "spots_left": 15,
+            "system_id": 3,
+            "description": "Help ensure the fraud detection system is fair and unbiased for all citizens."
+        }
+    ]
+    return pd.DataFrame(sessions)
+
+# Create sample questions
+def create_questions():
+    questions = [
+        {
+            "id": 1,
+            "system_id": 1,
+            "question": "How does the housing allocation system decide who gets priority?",
+            "answer": "The system assigns different weights to factors based on the city's housing policy. Currently, time on the waiting list accounts for 40% of the priority score, household needs for 30%, special circumstances for 20%, and neighborhood preference for 10%.",
+            "date": "2023-05-01",
+            "is_public": True
+        },
+        {
+            "id": 2,
+            "system_id": 1,
+            "question": "Can I see my priority score?",
+            "answer": "Yes, you can request your priority score and the factors that contributed to it by contacting the Housing Department or through your online housing account.",
+            "date": "2023-05-05",
+            "is_public": True
+        },
+        {
+            "id": 3,
+            "system_id": 3,
+            "question": "How is my data protected in the fraud detection system?",
+            "answer": "Your data is encrypted and access is restricted to authorized personnel only. The system uses anonymized data for pattern recognition, and personal identifiers are only used when a case requires human review.",
+            "date": "2023-05-10",
+            "is_public": True
+        },
+        {
+            "id": 4,
+            "system_id": 4,
+            "question": "Can I opt out of the public space monitoring?",
+            "answer": "The public space monitoring system uses anonymized data and does not track individuals. Clear signage is posted in areas where monitoring occurs. While you cannot opt out entirely, no personally identifiable information is stored unless there is a safety incident.",
+            "date": "2023-05-07",
+            "is_public": True
+        },
+        {
+            "id": 5,
+            "system_id": 1,
+            "question": "How often is the housing algorithm audited for bias?",
+            "answer": "The housing allocation algorithm undergoes a comprehensive bias audit every six months, with the most recent audit completed in February 2023. Additionally, ongoing monitoring occurs monthly to detect any potential issues.",
+            "date": "2023-05-15",
+            "is_public": True
+        }
+    ]
+    return pd.DataFrame(questions)
+
+# Initialize session state for data persistence
+if 'ai_systems' not in st.session_state:
+    st.session_state.ai_systems = create_ai_systems_data()
+
+if 'citizen_concerns' not in st.session_state:
+    st.session_state.citizen_concerns = create_citizen_concerns()
+
+if 'feedback_data' not in st.session_state:
+    st.session_state.feedback_data = create_feedback_data()
+
+if 'codesign_sessions' not in st.session_state:
+    st.session_state.codesign_sessions = create_codesign_sessions()
+
+if 'questions' not in st.session_state:
+    st.session_state.questions = create_questions()
+
+# ===============================
+# 2. STYLING AND HELPER FUNCTIONS
+# ===============================
+
+# Custom CSS
+def load_css():
     st.markdown("""
-    <div class="hero">
-        <h1>AI & Me: Understand, Question, Influence</h1>
-        <p>A civic platform empowering Amsterdam citizens to understand how AI is used in their city, question how it might affect them, and influence how it evolves.</p>
-        <div>
-            <button class="primary-button" onclick="window.location.href='#understand'">Explore AI Systems</button>
-            <button class="outline-button" onclick="window.location.href='#about'">Learn More</button>
-        </div>
-    </div>
+    <style>
+        .main-header {
+            font-size: 2.5rem;
+            color: white;
+            background-color: #1e293b;
+            padding: 1rem;
+            border-radius: 0.5rem;
+        }
+        .sub-header {
+            font-size: 1.8rem;
+            margin-top: 2rem;
+        }
+        .card {
+            border: 1px solid #e2e8f0;
+            border-radius: 0.5rem;
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+            background-color: white;
+        }
+        .risk-high {
+            color: white;
+            background-color: #ef4444;
+            padding: 0.25rem 0.5rem;
+            border-radius: 0.25rem;
+            font-size: 0.8rem;
+            font-weight: bold;
+        }
+        .risk-medium {
+            color: white;
+            background-color: #f59e0b;
+            padding: 0.25rem 0.5rem;
+            border-radius: 0.25rem;
+            font-size: 0.8rem;
+            font-weight: bold;
+        }
+        .risk-low {
+            color: white;
+            background-color: #10b981;
+            padding: 0.25rem 0.5rem;
+            border-radius: 0.25rem;
+            font-size: 0.8rem;
+            font-weight: bold;
+        }
+        .department-badge {
+            background-color: #e2e8f0;
+            padding: 0.25rem 0.5rem;
+            border-radius: 0.25rem;
+            font-size: 0.8rem;
+        }
+        .feedback-count {
+            display: flex;
+            align-items: center;
+            font-size: 0.9rem;
+            color: #6b7280;
+        }
+        .trust-indicator {
+            margin-bottom: 1rem;
+        }
+        .trust-label {
+            font-weight: bold;
+            margin-bottom: 0.25rem;
+        }
+        .trust-bar-bg {
+            background-color: #e2e8f0;
+            height: 0.5rem;
+            border-radius: 0.25rem;
+            margin-top: 0.25rem;
+        }
+        .trust-bar {
+            height: 0.5rem;
+            border-radius: 0.25rem;
+        }
+        .trust-bar-yes {
+            background-color: #10b981;
+        }
+        .trust-bar-no {
+            background-color: #ef4444;
+        }
+        .footer {
+            margin-top: 3rem;
+            padding-top: 1rem;
+            border-top: 1px solid #e2e8f0;
+            text-align: center;
+            color: #6b7280;
+        }
+        .tab-content {
+            padding: 1rem 0;
+        }
+        .explainer-box {
+            background-color: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 0.5rem;
+            padding: 1rem;
+            margin-bottom: 1rem;
+        }
+        .data-list {
+            list-style-type: none;
+            padding-left: 0;
+        }
+        .data-list li {
+            display: flex;
+            align-items: center;
+            margin-bottom: 0.5rem;
+        }
+        .data-list li:before {
+            content: "✓";
+            color: #10b981;
+            margin-right: 0.5rem;
+        }
+        .rights-list {
+            list-style-type: none;
+            padding-left: 0;
+        }
+        .rights-list li {
+            display: flex;
+            align-items: center;
+            margin-bottom: 0.5rem;
+        }
+        .rights-list li:before {
+            content: "🛡️";
+            margin-right: 0.5rem;
+        }
+        .concern-card {
+            border-left: 4px solid;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            background-color: white;
+            border-radius: 0.25rem;
+        }
+        .concern-purple {
+            border-left-color: #8b5cf6;
+        }
+        .concern-blue {
+            border-left-color: #3b82f6;
+        }
+        .concern-amber {
+            border-left-color: #f59e0b;
+        }
+        .concern-count {
+            font-size: 0.9rem;
+            color: #6b7280;
+        }
+        .session-card {
+            border: 1px solid #e2e8f0;
+            border-radius: 0.5rem;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            background-color: white;
+        }
+        .session-date {
+            font-size: 0.9rem;
+            color: #6b7280;
+        }
+        .spots-available {
+            color: #10b981;
+            font-weight: bold;
+        }
+        .spots-full {
+            color: #ef4444;
+            font-weight: bold;
+        }
+        .question-card {
+            border: 1px solid #e2e8f0;
+            border-radius: 0.5rem;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            background-color: white;
+        }
+        .question-date {
+            font-size: 0.8rem;
+            color: #6b7280;
+        }
+        .question-text {
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+        }
+        .answer-text {
+            color: #1f2937;
+        }
+        .impact-card {
+            display: flex;
+            align-items: flex-start;
+            margin-bottom: 1.5rem;
+        }
+        .impact-icon {
+            background-color: #ecfdf5;
+            color: #10b981;
+            padding: 0.75rem;
+            border-radius: 9999px;
+            margin-right: 1rem;
+        }
+        .impact-content h4 {
+            margin: 0 0 0.5rem 0;
+            font-weight: bold;
+        }
+        .impact-date {
+            font-size: 0.8rem;
+            color: #6b7280;
+            margin-top: 0.25rem;
+        }
+    </style>
+    """, unsafe_allow_html=True)
+
+# Risk level badge
+def risk_badge(risk_level):
+    if risk_level == "high":
+        return '<span class="risk-high">HIGH RISK</span>'
+    elif risk_level == "medium":
+        return '<span class="risk-medium">MEDIUM RISK</span>'
+    else:
+        return '<span class="risk-low">LOW RISK</span>'
+
+# Department badge
+def department_badge(department):
+    return f'<span class="department-badge">{department}</span>'
+
+# Format date
+def format_date(date_str):
+    date_obj = datetime.strptime(date_str, "%Y-%m-%d")
+    return date_obj.strftime("%B %d, %Y")
+
+# ===============================
+# 3. PAGE COMPONENTS
+# ===============================
+
+# Home page
+def home_page():
+    st.markdown('<h1 class="main-header">AI & Me: Understand, Question, Influence</h1>', unsafe_allow_html=True)
+    st.markdown("""
+    <p style="font-size: 1.2rem;">
+        A civic platform empowering Amsterdam citizens to understand how AI is used in their city, 
+        question how it affects them, and influence how it evolves.
+    </p>
     """, unsafe_allow_html=True)
     
-    # Three Pillars Section
-    st.markdown('<h2 class="section-title">Your Rights in the AI City</h2>', unsafe_allow_html=True)
+    # Language selector in sidebar
+    st.sidebar.title("Language")
+    language = st.sidebar.selectbox(
+        "Select your language",
+        ["English", "Nederlands", "العربية", "Türkçe", "Polski"]
+    )
     
+    # Top citizen concerns
+    st.markdown('<h2 class="sub-header">Top Citizen Concerns</h2>', unsafe_allow_html=True)
+    
+    concerns = st.session_state.citizen_concerns.sort_values('count', ascending=False)
+    
+    # Display concerns as cards
     col1, col2, col3 = st.columns(3)
     
     with col1:
-        st.markdown("""
-        <div class="card pillar-card">
-            <div class="icon icon-red">👁️</div>
-            <h3>Understand</h3>
-            <p>Discover how AI systems are used in Amsterdam with clear, jargon-free explanations.</p>
-            <button class="pillar-card-button" onclick="window.location.href='#understand'">
-                <span>Explore</span>
-                <span>→</span>
-            </button>
+        st.markdown(f"""
+        <div class="concern-card concern-purple">
+            <h3>{concerns.iloc[0]['category']}</h3>
+            <p>{concerns.iloc[0]['description']}</p>
+            <p class="concern-count">Mentioned by {concerns.iloc[0]['count']} citizens</p>
         </div>
         """, unsafe_allow_html=True)
-        
+    
     with col2:
-        st.markdown("""
-        <div class="card pillar-card">
-            <div class="icon icon-red">💬</div>
-            <h3>Question</h3>
-            <p>Ask questions, report concerns, and share your experiences with AI systems.</p>
-            <button class="pillar-card-button" onclick="window.location.href='#question'">
-                <span>Explore</span>
-                <span>→</span>
-            </button>
+        st.markdown(f"""
+        <div class="concern-card concern-blue">
+            <h3>{concerns.iloc[1]['category']}</h3>
+            <p>{concerns.iloc[1]['description']}</p>
+            <p class="concern-count">Mentioned by {concerns.iloc[1]['count']} citizens</p>
         </div>
         """, unsafe_allow_html=True)
-        
+    
     with col3:
-        st.markdown("""
-        <div class="card pillar-card">
-            <div class="icon icon-red">🗳️</div>
-            <h3>Influence</h3>
-            <p>Provide feedback and participate in the co-design of future AI systems.</p>
-            <button class="pillar-card-button" onclick="window.location.href='#influence'">
-                <span>Explore</span>
-                <span>→</span>
-            </button>
+        st.markdown(f"""
+        <div class="concern-card concern-amber">
+            <h3>{concerns.iloc[2]['category']}</h3>
+            <p>{concerns.iloc[2]['description']}</p>
+            <p class="concern-count">Mentioned by {concerns.iloc[2]['count']} citizens</p>
         </div>
         """, unsafe_allow_html=True)
     
-    # Concerns Section
-    st.markdown("""
-    <div class="bg-muted">
-        <h2 class="section-title">Addressing Your Concerns</h2>
-        <div class="container">
-    """, unsafe_allow_html=True)
+    # Visualize concerns
+    fig = px.bar(
+        concerns, 
+        x='category', 
+        y='count',
+        title='Citizen Concerns About AI Systems',
+        labels={'category': 'Concern Category', 'count': 'Number of Citizens'},
+        color='count',
+        color_continuous_scale=px.colors.sequential.Viridis
+    )
+    fig.update_layout(xaxis_tickangle=-45)
+    st.plotly_chart(fig, use_container_width=True)
     
-    col1, col2 = st.columns(2)
+    # Main tabs
+    tab1, tab2, tab3 = st.tabs(["Understand", "Question", "Influence"])
     
-    with col1:
-        st.markdown("""
-        <div class="card concern-card">
-            <h3>I feel powerless to influence how AI is used.</h3>
-            <p>Our feedback modules give you a direct voice in AI governance.</p>
-        </div>
-        """, unsafe_allow_html=True)
+    # Understand tab
+    with tab1:
+        st.markdown('<div class="tab-content">', unsafe_allow_html=True)
         
-        st.markdown("""
-        <div class="card concern-card">
-            <h3>I worry AI reinforces social inequality.</h3>
-            <p>View our trust indicators showing bias testing and human rights impact.</p>
-        </div>
-        """, unsafe_allow_html=True)
-        
-    with col2:
-        st.markdown("""
-        <div class="card concern-card">
-            <h3>I am concerned AI is used without my knowledge.</h3>
-            <p>Explore our transparent registry of all AI systems in Amsterdam.</p>
-        </div>
-        """, unsafe_allow_html=True)
-        
-        st.markdown("""
-        <div class="card concern-card">
-            <h3>I'm afraid of being watched or profiled.</h3>
-            <p>Learn exactly what data is used and how your privacy is protected.</p>
-        </div>
-        """, unsafe_allow_html=True)
-    
-    st.markdown("</div></div>", unsafe_allow_html=True)
-    
-    # CTA Section
-    st.markdown("""
-    <div style="text-align: center; padding: 4rem 0;">
-        <h2 style="font-size: 1.875rem; font-weight: 700; margin-bottom: 1.5rem;">Join the Conversation Today</h2>
-        <p style="font-size: 1.125rem; margin-bottom: 2rem; max-width: 42rem; margin-left: auto; margin-right: auto;">
-            Your voice matters in shaping how AI is used in Amsterdam. Start exploring, asking questions, and sharing your perspective.
-        </p>
-        <button class="primary-button" style="background-color: #dc2626; color: white;" onclick="window.location.href='#understand'">Get Started</button>
-    </div>
-    """, unsafe_allow_html=True)
-
-def understand_page():
-    st.markdown("""
-    <h1 style="font-size: 1.875rem; font-weight: 700; margin-bottom: 0.5rem;">Understand AI in Amsterdam</h1>
-    <p style="color: #6b7280; font-size: 1.125rem; margin-bottom: 1.5rem;">
-        Explore AI systems used in the city with clear, human-centered explanations.
-    </p>
-    """, unsafe_allow_html=True)
-    
-    # Search and filter
-    col1, col2 = st.columns([3, 1])
-    with col1:
-        st.text_input("", placeholder="Search AI systems...", label_visibility="collapsed")
-    with col2:
-        st.button("🔍 Filter")
-    
-    # Tabs
-    tabs = st.tabs(["All Systems", "Neighborhood", "City Services", "Mobility"])
-    
-    with tabs[0]:
-        # All systems tab
-        col1, col2, col3 = st.columns(3)
-        
-        with col1:
-            st.markdown("""
-            <div class="card algorithm-card">
-                <div class="algorithm-card-header">
-                    <span class="badge badge-secondary">Public Safety</span>
-                    <span class="badge badge-yellow">Medium Risk</span>
-                </div>
-                <h3>Crowd Monitoring System</h3>
-                <p>AI that analyzes crowd density in public spaces to prevent overcrowding.</p>
-                <button class="algorithm-card-button">
-                    <span>Learn More</span>
-                    <span>→</span>
-                </button>
-            </div>
-            """, unsafe_allow_html=True)
-            
-            st.markdown("""
-            <div class="card algorithm-card">
-                <div class="algorithm-card-header">
-                    <span class="badge badge-secondary">Tourism</span>
-                    <span class="badge badge-yellow">Medium Risk</span>
-                </div>
-                <h3>Tourist Flow Prediction</h3>
-                <p>System that forecasts tourist movements to manage city resources.</p>
-                <button class="algorithm-card-button">
-                    <span>Learn More</span>
-                    <span>→</span>
-                </button>
-            </div>
-            """, unsafe_allow_html=True)
-            
-        with col2:
-            st.markdown("""
-            <div class="card algorithm-card">
-                <div class="algorithm-card-header">
-                    <span class="badge badge-secondary">Mobility</span>
-                    <span class="badge badge-green">Low Risk</span>
-                </div>
-                <h3>Parking Enforcement AI</h3>
-                <p>System that identifies parking violations using camera footage.</p>
-                <button class="algorithm-card-button">
-                    <span>Learn More</span>
-                    <span>→</span>
-                </button>
-            </div>
-            """, unsafe_allow_html=True)
-            
-            st.markdown("""
-            <div class="card algorithm-card">
-                <div class="algorithm-card-header">
-                    <span class="badge badge-secondary">Social Affairs</span>
-                    <span class="badge badge-red">High Risk</span>
-                </div>
-                <h3>Benefit Fraud Detection</h3>
-                <p>AI that identifies potential fraud in social benefit applications.</p>
-                <button class="algorithm-card-button">
-                    <span>Learn More</span>
-                    <span>→</span>
-                </button>
-            </div>
-            """, unsafe_allow_html=True)
-            
-        with col3:
-            st.markdown("""
-            <div class="card algorithm-card">
-                <div class="algorithm-card-header">
-                    <span class="badge badge-secondary">Housing</span>
-                    <span class="badge badge-red">High Risk</span>
-                </div>
-                <h3>Social Housing Allocation</h3>
-                <p>Algorithm that helps distribute social housing based on need and waiting time.</p>
-                <button class="algorithm-card-button" onclick="window.location.href='#housing-allocation'">
-                    <span>Learn More</span>
-                    <span>→</span>
-                </button>
-            </div>
-            """, unsafe_allow_html=True)
-            
-            st.markdown("""
-            <div class="card algorithm-card">
-                <div class="algorithm-card-header">
-                    <span class="badge badge-secondary">Waste Management</span>
-                    <span class="badge badge-green">Low Risk</span>
-                </div>
-                <h3>Waste Collection Optimization</h3>
-                <p>AI that plans efficient routes for waste collection vehicles.</p>
-                <button class="algorithm-card-button">
-                    <span>Learn More</span>
-                    <span>→</span>
-                </button>
-            </div>
-            """, unsafe_allow_html=True)
-
-def housing_allocation_page():
-    st.markdown("""
-    <div style="margin-bottom: 1rem;">
-        <span class="badge badge-secondary">Housing</span>
-        <span class="badge badge-red">High Risk</span>
-    </div>
-    <h1 style="font-size: 1.875rem; font-weight: 700; margin-bottom: 0.5rem;">Social Housing Allocation System</h1>
-    <p style="color: #6b7280; font-size: 1.125rem; margin-bottom: 1.5rem;">
-        An algorithm that helps distribute social housing based on need and waiting time.
-    </p>
-    """, unsafe_allow_html=True)
-    
-    # Tabs
-    tabs = st.tabs(["Explanation", "Trust Indicators", "Your Rights", "Give Feedback"])
-    
-    with tabs[0]:
-        # Explanation tab
-        col1, col2 = st.columns([2, 1])
-        
-        with col1:
-            st.markdown("""
-            <div class="card">
-                <h2 style="font-size: 1.5rem; font-weight: 600; margin-bottom: 1rem;">What is this system for?</h2>
-                <p style="margin-bottom: 1rem;">
-                    The Social Housing Allocation System helps the city distribute limited social housing units to
-                    those who need them most. Amsterdam faces a housing shortage, and this system aims to make the
-                    allocation process fair and transparent.
-                </p>
-
-                <h2 style="font-size: 1.5rem; font-weight: 600; margin-bottom: 1rem; margin-top: 2rem;">How does it affect me?</h2>
-                <p style="margin-bottom: 1rem;">
-                    If you apply for social housing in Amsterdam, this system will analyze your application to
-                    determine your position on the waiting list. It considers factors like:
-                </p>
-                <ul style="list-style-type: disc; padding-left: 1.5rem; margin-bottom: 1rem;">
-                    <li>How long you've been waiting</li>
-                    <li>Your current housing situation</li>
-                    <li>Your household composition (family size, etc.)</li>
-                    <li>Your income level</li>
-                    <li>Special circumstances (medical needs, etc.)</li>
-                </ul>
-                <p>
-                    The system then assigns a priority score that determines when you might receive a housing offer.
-                    Higher scores mean higher priority.
-                </p>
-
-                <h2 style="font-size: 1.5rem; font-weight: 600; margin-bottom: 1rem; margin-top: 2rem;">What kind of data does it use?</h2>
-                <p style="margin-bottom: 1rem;">The system uses data from your housing application, including:</p>
-                <ul style="list-style-type: disc; padding-left: 1.5rem; margin-bottom: 1rem;">
-                    <li>Personal information (age, household composition)</li>
-                    <li>Financial information (income, assets, debt situation)</li>
-                    <li>Current housing details (address, type of housing, rental amount)</li>
-                    <li>Special circumstances (health issues, social needs)</li>
-                    <li>Registration date and history</li>
-                </ul>
-                <p style="color: #6b7280; font-size: 0.875rem;">
-                    Note: All data is processed in accordance with GDPR and local privacy regulations.
-                </p>
-            </div>
-            """, unsafe_allow_html=True)
-            
-            # Explainability Rating
-            st.markdown("""
-            <div class="card" style="margin-top: 1.5rem;">
-                <h3 style="font-size: 1.125rem; font-weight: 600; margin-bottom: 1rem;">Was this explanation helpful?</h3>
-                <p style="color: #6b7280; font-size: 0.875rem; margin-bottom: 1.5rem;">
-                    Your feedback helps us improve how we explain AI systems.
-                </p>
-                
-                <div style="margin-bottom: 1.5rem;">
-                    <label style="display: block; margin-bottom: 0.5rem;">Was the explanation clear and easy to understand?</label>
-                    <div style="display: flex; gap: 1rem;">
-                        <div style="display: flex; align-items: center; gap: 0.25rem;">
-                            <input type="radio" id="clarity-yes" name="clarity">
-                            <label for="clarity-yes">Yes</label>
-                        </div>
-                        <div style="display: flex; align-items: center; gap: 0.25rem;">
-                            <input type="radio" id="clarity-somewhat" name="clarity">
-                            <label for="clarity-somewhat">Somewhat</label>
-                        </div>
-                        <div style="display: flex; align-items: center; gap: 0.25rem;">
-                            <input type="radio" id="clarity-no" name="clarity">
-                            <label for="clarity-no">No</label>
-                        </div>
-                    </div>
-                </div>
-                
-                <div style="margin-bottom: 1.5rem;">
-                    <label style="display: block; margin-bottom: 0.5rem;">Did the explanation feel human and considerate?</label>
-                    <div style="display: flex; gap: 1rem;">
-                        <div style="display: flex; align-items: center; gap: 0.25rem;">
-                            <input type="radio" id="care-yes" name="care">
-                            <label for="care-yes">Yes</label>
-                        </div>
-                        <div style="display: flex; align-items: center; gap: 0.25rem;">
-                            <input type="radio" id="care-somewhat" name="care">
-                            <label for="care-somewhat">Somewhat</label>
-                        </div>
-                        <div style="display: flex; align-items: center; gap: 0.25rem;">
-                            <input type="radio" id="care-no" name="care">
-                            <label for="care-no">No</label>
-                        </div>
-                    </div>
-                </div>
-                
-                <div style="margin-bottom: 1.5rem;">
-                    <label style="display: block; margin-bottom: 0.5rem;">Did you learn about your rights related to this system?</label>
-                    <div style="display: flex; gap: 1rem;">
-                        <div style="display: flex; align-items: center; gap: 0.25rem;">
-                            <input type="radio" id="usefulness-yes" name="usefulness">
-                            <label for="usefulness-yes">Yes</label>
-                        </div>
-                        <div style="display: flex; align-items: center; gap: 0.25rem;">
-                            <input type="radio" id="usefulness-somewhat" name="usefulness">
-                            <label for="usefulness-somewhat">Somewhat</label>
-                        </div>
-                        <div style="display: flex; align-items: center; gap: 0.25rem;">
-                            <input type="radio" id="usefulness-no" name="usefulness">
-                            <label for="usefulness-no">No</label>
-                        </div>
-                    </div>
-                </div>
-                
-                <button style="background-color: #dc2626; color: white; padding: 0.5rem 1rem; border-radius: 0.375rem; font-weight: 500; border: none; width: 100%;">
-                    Submit Ratings
-                </button>
-            </div>
-            """, unsafe_allow_html=True)
-            
-        with col2:
-            st.markdown("""
-            <div class="card">
-                <h3 style="font-size: 1.125rem; font-weight: 600; margin-bottom: 1rem;">Quick Summary</h3>
-                <div style="margin-bottom: 1rem;">
-                    <div style="display: flex; gap: 0.75rem; margin-bottom: 1rem;">
-                        <div style="color: #dc2626; margin-top: 0.125rem;">👥</div>
-                        <div>
-                            <p style="font-weight: 500;">Who uses it</p>
-                            <p style="font-size: 0.875rem; color: #6b7280;">Housing Department, Social Affairs</p>
-                        </div>
-                    </div>
-                    <div style="display: flex; gap: 0.75rem; margin-bottom: 1rem;">
-                        <div style="color: #dc2626; margin-top: 0.125rem;">💾</div>
-                        <div>
-                            <p style="font-weight: 500;">Data retention</p>
-                            <p style="font-size: 0.875rem; color: #6b7280;">7 years after application</p>
-                        </div>
-                    </div>
-                    <div style="display: flex; gap: 0.75rem;">
-                        <div style="color: #dc2626; margin-top: 0.125rem;">🛡️</div>
-                        <div>
-                            <p style="font-weight: 500;">Human oversight</p>
-                            <p style="font-size: 0.875rem; color: #6b7280;">Final decisions reviewed by housing officers</p>
-                        </div>
-                    </div>
-                </div>
-                
-                <div style="border-top: 1px solid #e5e7eb; margin: 1.5rem 0;"></div>
-                
-                <h3 style="font-size: 1.125rem; font-weight: 600; margin-bottom: 1rem;">Related Systems</h3>
-                <ul style="list-style-type: none; padding: 0;">
-                    <li style="margin-bottom: 0.5rem;">
-                        <a href="#" style="color: #dc2626; text-decoration: none; display: flex; align-items: center;">
-                            Housing Fraud Detection
-                        </a>
-                    </li>
-                    <li>
-                        <a href="#" style="color: #dc2626; text-decoration: none; display: flex; align-items: center;">
-                            Neighborhood Development Planning
-                        </a>
-                    </li>
-                </ul>
-            </div>
-            """, unsafe_allow_html=True)
-    
-    with tabs[1]:
-        # Trust Indicators tab
-        st.markdown("""
-        <div class="card">
-            <h2 style="font-size: 1.5rem; font-weight: 600; margin-bottom: 1.5rem;">Trust Indicators</h2>
-            <p style="margin-bottom: 1.5rem;">
-                These indicators show how this AI system was developed, tested, and monitored to ensure it's
-                trustworthy and fair.
-            </p>
-
-            <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 1.5rem;">
-                <div class="trust-indicator">
-                    <div class="trust-indicator-header">
-                        <span style="font-weight: 500;">Bias Testing</span>
-                        <span style="font-size: 0.875rem; font-weight: 500;">3/5</span>
-                    </div>
-                    <div class="trust-indicator-bar">
-                        <div class="trust-indicator-fill" style="width: 60%; background-color: #f59e0b;"></div>
-                    </div>
-                    <p class="trust-indicator-description">Regular testing for bias against protected groups</p>
-                </div>
-                
-                <div class="trust-indicator">
-                    <div class="trust-indicator-header">
-                        <span style="font-weight: 500;">Citizen Consultation</span>
-                        <span style="font-size: 0.875rem; font-weight: 500;">2/5</span>
-                    </div>
-                    <div class="trust-indicator-bar">
-                        <div class="trust-indicator-fill" style="width: 40%; background-color: #f97316;"></div>
-                    </div>
-                    <p class="trust-indicator-description">Limited consultation with housing applicants</p>
-                </div>
-                
-                <div class="trust-indicator">
-                    <div class="trust-indicator-header">
-                        <span style="font-weight: 500;">Human Oversight</span>
-                        <span style="font-size: 0.875rem; font-weight: 500;">4/5</span>
-                    </div>
-                    <div class="trust-indicator-bar">
-                        <div class="trust-indicator-fill" style="width: 80%; background-color: #22c55e;"></div>
-                    </div>
-                    <p class="trust-indicator-description">Housing officers review all decisions</p>
-                </div>
-                
-                <div class="trust-indicator">
-                    <div class="trust-indicator-header">
-                        <span style="font-weight: 500;">Transparency</span>
-                        <span style="font-size: 0.875rem; font-weight: 500;">3/5</span>
-                    </div>
-                    <div class="trust-indicator-bar">
-                        <div class="trust-indicator-fill" style="width: 60%; background-color: #f59e0b;"></div>
-                    </div>
-                    <p class="trust-indicator-description">Algorithm details published but complex</p>
-                </div>
-                
-                <div class="trust-indicator">
-                    <div class="trust-indicator-header">
-                        <span style="font-weight: 500;">Impact Assessment</span>
-                        <span style="font-size: 0.875rem; font-weight: 500;">4/5</span>
-                    </div>
-                    <div class="trust-indicator-bar">
-                        <div class="trust-indicator-fill" style="width: 80%; background-color: #22c55e;"></div>
-                    </div>
-                    <p class="trust-indicator-description">Regular assessment of social impact</p>
-                </div>
-                
-                <div class="trust-indicator">
-                    <div class="trust-indicator-header">
-                        <span style="font-weight: 500;">Data Protection</span>
-                        <span style="font-size: 0.875rem; font-weight: 500;">5/5</span>
-                    </div>
-                    <div class="trust-indicator-bar">
-                        <div class="trust-indicator-fill" style="width: 100%; background-color: #22c55e;"></div>
-                    </div>
-                    <p class="trust-indicator-description">Strong data protection measures in place</p>
-                </div>
-            </div>
-
-            <div style="margin-top: 2rem;">
-                <h3 style="font-size: 1.25rem; font-weight: 600; margin-bottom: 1rem;">Independent Audits</h3>
-                <div style="display: flex; flex-direction: column; gap: 1rem;">
-                    <div style="padding: 1rem; border: 1px solid #e5e7eb; border-radius: 0.5rem;">
-                        <div style="display: flex; justify-content: space-between; align-items: flex-start;">
-                            <div>
-                                <p style="font-weight: 500;">University of Amsterdam - AI Ethics Lab</p>
-                                <p style="font-size: 0.875rem; color: #6b7280;">Last audit: March 2023</p>
-                            </div>
-                            <span class="badge badge-secondary">External</span>
-                        </div>
-                        <p style="margin-top: 0.5rem; font-size: 0.875rem;">
-                            Found potential bias against single-parent households. Recommended adjustments were implemented
-                            in May 2023.
-                        </p>
-                    </div>
-                    
-                    <div style="padding: 1rem; border: 1px solid #e5e7eb; border-radius: 0.5rem;">
-                        <div style="display: flex; justify-content: space-between; align-items: flex-start;">
-                            <div>
-                                <p style="font-weight: 500;">Amsterdam Digital Rights Coalition</p>
-                                <p style="font-size: 0.875rem; color: #6b7280;">Last review: November 2022</p>
-                            </div>
-                            <span class="badge badge-secondary">Civil Society</span>
-                        </div>
-                        <p style="margin-top: 0.5rem; font-size: 0.875rem;">
-                            Raised concerns about transparency and accessibility of the appeals process. Improvements in
-                            progress.
-                        </p>
-                    </div>
-                </div>
-            </div>
-        </div>
-        """, unsafe_allow_html=True)
-        
-    with tabs[2]:
-        # Your Rights tab
-        st.markdown("""
-        <div class="card">
-            <h2 style="font-size: 1.5rem; font-weight: 600; margin-bottom: 1.5rem;">Your Rights</h2>
-            <p style="margin-bottom: 1.5rem;">
-                As a citizen affected by this AI system, you have specific rights under GDPR and local regulations:
-            </p>
-
-            <div style="display: flex; flex-direction: column; gap: 1.5rem;">
-                <div style="padding: 1rem; border: 1px solid #e5e7eb; border-radius: 0.5rem;">
-                    <h3 style="font-size: 1.125rem; font-weight: 600; margin-bottom: 0.5rem;">Right to Explanation</h3>
-                    <p>
-                        You can request a specific explanation of how a decision about your housing application was made.
-                        The Housing Department must provide this in clear, non-technical language.
-                    </p>
-                    <button style="margin-top: 1rem; background-color: transparent; border: 1px solid #e5e7eb; color: #111827; padding: 0.375rem 0.75rem; border-radius: 0.375rem; font-size: 0.875rem; font-weight: 500;">
-                        Request an Explanation
-                    </button>
-                </div>
-
-                <div style="padding: 1rem; border: 1px solid #e5e7eb; border-radius: 0.5rem;">
-                    <h3 style="font-size: 1.125rem; font-weight: 600; margin-bottom: 0.5rem;">Right to Object</h3>
-                    <p>
-                        If you believe the system has made an unfair decision, you can object and request human review. A
-                        housing officer will manually review your case.
-                    </p>
-                    <button style="margin-top: 1rem; background-color: transparent; border: 1px solid #e5e7eb; color: #111827; padding: 0.375rem 0.75rem; border-radius: 0.375rem; font-size: 0.875rem; font-weight: 500;">
-                        File an Objection
-                    </button>
-                </div>
-
-                <div style="padding: 1rem; border: 1px solid #e5e7eb; border-radius: 0.5rem;">
-                    <h3 style="font-size: 1.125rem; font-weight: 600; margin-bottom: 0.5rem;">Right to Access Your Data</h3>
-                    <p>
-                        You can request all personal data used by the system in your case. This includes all factors
-                        considered in your priority score calculation.
-                    </p>
-                    <button style="margin-top: 1rem; background-color: transparent; border: 1px solid #e5e7eb; color: #111827; padding: 0.375rem 0.75rem; border-radius: 0.375rem; font-size: 0.875rem; font-weight: 500;">
-                        Request Your Data
-                    </button>
-                </div>
-
-                <div style="padding: 1rem; border: 1px solid #e5e7eb; border-radius: 0.5rem;">
-                    <h3 style="font-size: 1.125rem; font-weight: 600; margin-bottom: 0.5rem;">Right to Correction</h3>
-                    <p>
-                        If you find incorrect information in your data, you have the right to have it corrected. This may
-                        affect your priority score.
-                    </p>
-                    <button style="margin-top: 1rem; background-color: transparent; border: 1px solid #e5e7eb; color: #111827; padding: 0.375rem 0.75rem; border-radius: 0.375rem; font-size: 0.875rem; font-weight: 500;">
-                        Request a Correction
-                    </button>
-                </div>
-            </div>
-        </div>
-        """, unsafe_allow_html=True)
-        
-    with tabs[3]:
-        # Give Feedback tab
-        st.markdown("""
-        <div class="card">
-            <h2 style="font-size: 1.5rem; font-weight: 600; margin-bottom: 1rem;">Share Your Feedback</h2>
-            <p style="color: #6b7280; margin-bottom: 1.5rem;">Tell us what you think about the Social Housing Allocation System</p>
-            
-            <div style="margin-bottom: 1.5rem;">
-                <h3 style="font-size: 1.125rem; font-weight: 500; margin-bottom: 0.75rem;">Type of Feedback</h3>
-                <div style="display: flex; flex-direction: column; gap: 0.5rem;">
-                    <div style="display: flex; align-items: center; gap: 0.5rem;">
-                        <input type="radio" id="concern" name="feedback-type" checked>
-                        <label for="concern" style="display: flex; align-items: center; cursor: pointer;">
-                            <span style="color: #ef4444; margin-right: 0.5rem;">⚠️</span>
-                            Report a concern
-                        </label>
-                    </div>
-                    <div style="display: flex; align-items: center; gap: 0.5rem;">
-                        <input type="radio" id="question" name="feedback-type">
-                        <label for="question" style="display: flex; align-items: center; cursor: pointer;">
-                            <span style="color: #3b82f6; margin-right: 0.5rem;">💬</span>
-                            Ask a question
-                        </label>
-                    </div>
-                    <div style="display: flex; align-items: center; gap: 0.5rem;">
-                        <input type="radio" id="suggestion" name="feedback-type">
-                        <label for="suggestion" style="display: flex; align-items: center; cursor: pointer;">
-                            <span style="color: #22c55e; margin-right: 0.5rem;">👍</span>
-                            Make a suggestion
-                        </label>
-                    </div>
-                </div>
-            </div>
-            
-            <div style="margin-bottom: 1.5rem;">
-                <label for="concern-type" style="display: block; margin-bottom: 0.5rem;">What are you concerned about?</label>
-                <select id="concern-type" style="width: 100%; padding: 0.5rem; border: 1px solid #e5e7eb; border-radius: 0.375rem; background-color: white;">
-                    <option value="">Select a concern...</option>
-                    <option value="fairness">Fairness or discrimination</option>
-                    <option value="privacy">Privacy or data protection</option>
-                    <option value="transparency">Lack of transparency or explanation</option>
-                    <option value="accuracy">Accuracy of decisions</option>
-                    <option value="other">Other concern</option>
-                </select>
-            </div>
-            
-            <div style="margin-bottom: 1.5rem;">
-                <label for="feedback-details" style="display: block; margin-bottom: 0.5rem;">Describe your concern</label>
-                <textarea id="feedback-details" placeholder="Please provide details..." style="width: 100%; min-height: 150px; padding: 0.5rem; border: 1px solid #e5e7eb; border-radius: 0.375rem;"></textarea>
-            </div>
-            
-            <div style="margin-bottom: 1.5rem;">
-                <label for="impact" style="display: block; margin-bottom: 0.5rem;">How has this affected you personally? (optional)</label>
-                <textarea id="impact" placeholder="Share your experience..." style="width: 100%; min-height: 100px; padding: 0.5rem; border: 1px solid #e5e7eb; border-radius: 0.375rem;"></textarea>
-            </div>
-            
-            <div style="margin-bottom: 1.5rem;">
-                <h3 style="font-size: 1.125rem; font-weight: 500; margin-bottom: 1rem;">Contact Information (optional)</h3>
-                <p style="font-size: 0.875rem; color: #6b7280; margin-bottom: 1rem;">
-                    If you'd like us to follow up with you about your feedback, please provide your contact information.
-                </p>
-                <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem; margin-bottom: 1rem;">
-                    <div>
-                        <label for="name" style="display: block; margin-bottom: 0.5rem;">Name</label>
-                        <input id="name" placeholder="Your name" style="width: 100%; padding: 0.5rem; border: 1px solid #e5e7eb; border-radius: 0.375rem;">
-                    </div>
-                    <div>
-                        <label for="email" style="display: block; margin-bottom: 0.5rem;">Email</label>
-                        <input id="email" type="email" placeholder="Your email" style="width: 100%; padding: 0.5rem; border: 1px solid #e5e7eb; border-radius: 0.375rem;">
-                    </div>
-                </div>
-                <div style="display: flex; align-items: center; gap: 0.5rem;">
-                    <input type="checkbox" id="public">
-                    <label for="public" style="font-size: 0.875rem;">
-                        I'm comfortable with my feedback (without personal details) being shared publicly
-                    </label>
-                </div>
-            </div>
-            
-            <button style="width: 100%; background-color: #dc2626; color: white; padding: 0.75rem; border: none; border-radius: 0.375rem; font-weight: 500;">
-                Submit Feedback
-            </button>
-        </div>
-        """, unsafe_allow_html=True)
-
-def question_page():
-    st.markdown("""
-    <h1 style="font-size: 1.875rem; font-weight: 700; margin-bottom: 0.5rem;">Question AI in Amsterdam</h1>
-    <p style="color: #6b7280; font-size: 1.125rem; margin-bottom: 1.5rem;">
-        Ask questions, report concerns, and share your experiences with AI systems in the city.
-    </p>
-    """, unsafe_allow_html=True)
-    
-    # Tabs
-    tabs = st.tabs(["Public Feedback", "Submit Feedback", "FAQ"])
-    
-    with tabs[0]:
-        # Public Feedback tab
-        col1, col2 = st.columns([3, 1])
-        with col1:
-            st.text_input("", placeholder="Search feedback...", label_visibility="collapsed")
-        with col2:
-            st.button("🔍 Filter")
-            
-        # Feedback cards
-        st.markdown("""
-        <div class="card">
-            <div style="margin-bottom: 0.75rem;">
-                <span class="badge badge-red">Concern</span>
-                <span class="badge badge-secondary">Social Housing Allocation</span>
-            </div>
-            <h3 style="font-size: 1.25rem; font-weight: 600; margin-bottom: 0.5rem;">Housing allocation seems biased against single parents</h3>
-            <p style="color: #6b7280; margin-bottom: 1rem;">
-                I've been waiting for social housing for 3 years as a single parent, but I know couples who got housing faster. The algorithm seems to prioritize two-parent households.
-            </p>
-            <p style="font-size: 0.75rem; color: #6b7280; margin-bottom: 1.5rem;">Posted 2 days ago</p>
-            
-            <div style="margin-top: 1.5rem; padding-top: 1.5rem; border-top: 1px solid #e5e7eb;">
-                <h4 style="font-weight: 500; margin-bottom: 1rem;">Responses</h4>
-                <div style="padding-left: 1rem; border-left: 2px solid #e5e7eb;">
-                    <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.25rem;">
-                        <div style="display: flex; align-items: center; gap: 0.5rem;">
-                            <span style="font-weight: 500;">Housing Department</span>
-                            <span class="badge" style="font-size: 0.75rem; padding: 0.125rem 0.375rem;">Official</span>
-                        </div>
-                        <span style="font-size: 0.75rem; color: #6b7280;">1 day ago</span>
-                    </div>
-                    <p style="font-size: 0.875rem;">
-                        Thank you for your feedback. We're investigating this concern and will update our bias testing procedures. We've scheduled an audit specifically looking at outcomes for single-parent households.
-                    </p>
-                </div>
-            </div>
-            
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 1.5rem;">
-                <button style="color: #6b7280; background: none; border: none; display: flex; align-items: center; gap: 0.25rem; font-size: 0.875rem;">
-                    <span>❤️</span>
-                    <span>Helpful</span>
-                </button>
-                <button style="background-color: transparent; border: 1px solid #e5e7eb; color: #111827; padding: 0.375rem 0.75rem; border-radius: 0.375rem; font-size: 0.875rem; display: flex; align-items: center; gap: 0.25rem;">
-                    <span>💬</span>
-                    <span>Respond</span>
-                </button>
-            </div>
-        </div>
-        """, unsafe_allow_html=True)
-        
-        st.markdown("""
-        <div class="card" style="margin-top: 1.5rem;">
-            <div style="margin-bottom: 0.75rem;">
-                <span class="badge badge-blue">Question</span>
-                <span class="badge badge-secondary">Parking Enforcement AI</span>
-            </div>
-            <h3 style="font-size: 1.25rem; font-weight: 600; margin-bottom: 0.5rem;">How does the parking enforcement system handle privacy?</h3>
-            <p style="color: #6b7280; margin-bottom: 1rem;">
-                I'm curious about how the parking enforcement cameras handle privacy. Do they record and store footage of people walking by? How long is data kept?
-            </p>
-            <p style="font-size: 0.75rem; color: #6b7280; margin-bottom: 1.5rem;">Posted 1 week ago</p>
-            
-            <div style="margin-top: 1.5rem; padding-top: 1.5rem; border-top: 1px solid #e5e7eb;">
-                <h4 style="font-weight: 500; margin-bottom: 1rem;">Responses</h4>
-                <div style="padding-left: 1rem; border-left: 2px solid #e5e7eb; margin-bottom: 1rem;">
-                    <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.25rem;">
-                        <div style="display: flex; align-items: center; gap: 0.5rem;">
-                            <span style="font-weight: 500;">Mobility Department</span>
-                            <span class="badge" style="font-size: 0.75rem; padding: 0.125rem 0.375rem;">Official</span>
-                        </div>
-                        <span style="font-size: 0.75rem; color: #6b7280;">6 days ago</span>
-                    </div>
-                    <p style="font-size: 0.875rem;">
-                        The parking enforcement cameras only capture license plates, not pedestrians. Images are automatically processed to detect violations, and all data is deleted after 72 hours unless a violation is detected.
-                    </p>
-                </div>
-                
-                <div style="padding-left: 1rem; border-left: 2px solid #e5e7eb;">
-                    <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.25rem;">
-                        <div style="display: flex; align-items: center; gap: 0.5rem;">
-                            <span style="font-weight: 500;">Amsterdam Privacy Coalition</span>
-                        </div>
-                        <span style="font-size: 0.75rem; color: #6b7280;">5 days ago</span>
-                    </div>
-                    <p style="font-size: 0.875rem;">
-                        We've reviewed this system and can confirm the data retention policies are being followed. However, we're advocating for clearer signage in areas where these cameras operate.
-                    </p>
-                </div>
-            </div>
-            
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 1.5rem;">
-                <button style="color: #6b7280; background: none; border: none; display: flex; align-items: center; gap: 0.25rem; font-size: 0.875rem;">
-                    <span>❤️</span>
-                    <span>Helpful</span>
-                </button>
-                <button style="background-color: transparent; border: 1px solid #e5e7eb; color: #111827; padding: 0.375rem 0.75rem; border-radius: 0.375rem; font-size: 0.875rem; display: flex; align-items: center; gap: 0.25rem;">
-                    <span>💬</span>
-                    <span>Respond</span>
-                </button>
-            </div>
-        </div>
-        """, unsafe_allow_html=True)
-    
-    with tabs[1]:
-        # Submit Feedback tab
-        col1, col2 = st.columns([2, 1])
-        
-        with col1:
-            st.markdown("""
-            <div class="card">
-                <h2 style="font-size: 1.5rem; font-weight: 600; margin-bottom: 1rem;">Share Your Feedback</h2>
-                <p style="color: #6b7280; margin-bottom: 1.5rem;">Tell us what you think about any AI system in Amsterdam</p>
-                
-                <div style="margin-bottom: 1.5rem;">
-                    <h3 style="font-size: 1.125rem; font-weight: 500; margin-bottom: 0.75rem;">Type of Feedback</h3>
-                    <div style="display: flex; flex-direction: column; gap: 0.5rem;">
-                        <div style="display: flex; align-items: center; gap: 0.5rem;">
-                            <input type="radio" id="concern" name="feedback-type" checked>
-                            <label for="concern" style="display: flex; align-items: center; cursor: pointer;">
-                                <span style="color: #ef4444; margin-right: 0.5rem;">⚠️</span>
-                                Report a concern
-                            </label>
-                        </div>
-                        <div style="display: flex; align-items: center; gap: 0.5rem;">
-                            <input type="radio" id="question" name="feedback-type">
-                            <label for="question" style="display: flex; align-items: center; cursor: pointer;">
-                                <span style="color: #3b82f6; margin-right: 0.5rem;">💬</span>
-                                Ask a question
-                            </label>
-                        </div>
-                        <div style="display: flex; align-items: center; gap: 0.5rem;">
-                            <input type="radio" id="suggestion" name="feedback-type">
-                            <label for="suggestion" style="display: flex; align-items: center; cursor: pointer;">
-                                <span style="color: #22c55e; margin-right: 0.5rem;">👍</span>
-                                Make a suggestion
-                            </label>
-                        </div>
-                    </div>
-                </div>
-                
-                <div style="margin-bottom: 1.5rem;">
-                    <label for="system" style="display: block; margin-bottom: 0.5rem;">Which AI system?</label>
-                    <select id="system" style="width: 100%; padding: 0.5rem; border: 1px solid #e5e7eb; border-radius: 0.375rem; background-color: white;">
-                        <option value="">Select a system...</option>
-                        <option value="housing">Social Housing Allocation</option>
-                        <option value="parking">Parking Enforcement AI</option>
-                        <option value="crowd">Crowd Monitoring System</option>
-                        <option value="waste">Waste Collection Optimization</option>
-                        <option value="other">Other system</option>
-                    </select>
-                </div>
-                
-                <div style="margin-bottom: 1.5rem;">
-                    <label for="feedback-title" style="display: block; margin-bottom: 0.5rem;">Title</label>
-                    <input id="feedback-title" placeholder="Brief summary of your feedback" style="width: 100%; padding: 0.5rem; border: 1px solid #e5e7eb; border-radius: 0.375rem;">
-                </div>
-                
-                <div style="margin-bottom: 1.5rem;">
-                    <label for="feedback-details" style="display: block; margin-bottom: 0.5rem;">Details</label>
-                    <textarea id="feedback-details" placeholder="Please provide details..." style="width: 100%; min-height: 150px; padding: 0.5rem; border: 1px solid #e5e7eb; border-radius: 0.375rem;"></textarea>
-                </div>
-                
-                <div style="margin-bottom: 1.5rem;">
-                    <h3 style="font-size: 1.125rem; font-weight: 500; margin-bottom: 1rem;">Contact Information (optional)</h3>
-                    <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem; margin-bottom: 1rem;">
-                        <div>
-                            <label for="name" style="display: block; margin-bottom: 0.5rem;">Name</label>
-                            <input id="name" placeholder="Your name" style="width: 100%; padding: 0.5rem; border: 1px solid #e5e7eb; border-radius: 0.375rem;">
-                        </div>
-                        <div>
-                            <label for="email" style="display: block; margin-bottom: 0.5rem;">Email</label>
-                            <input id="email" type="email" placeholder="Your email" style="width: 100%; padding: 0.5rem; border: 1px solid #e5e7eb; border-radius: 0.375rem;">
-                        </div>
-                    </div>
-                    <div style="display: flex; align-items: center; gap: 0.5rem;">
-                        <input type="checkbox" id="public">
-                        <label for="public" style="font-size: 0.875rem;">
-                            I'm comfortable with my feedback (without personal details) being shared publicly
-                        </label>
-                    </div>
-                </div>
-                
-                <button style="width: 100%; background-color: #dc2626; color: white; padding: 0.75rem; border: none; border-radius: 0.375rem; font-weight: 500;">
-                    Submit Feedback
-                </button>
-            </div>
-            """, unsafe_allow_html=True)
-            
-        with col2:
-            st.markdown("""
-            <div class="card">
-                <h3 style="font-size: 1.25rem; font-weight: 600; margin-bottom: 1rem;">About Your Feedback</h3>
-                <p style="margin-bottom: 1rem;">
-                    Your feedback is valuable in making AI systems in Amsterdam more transparent, fair, and accountable.
-                </p>
-                <div style="margin-bottom: 0.5rem;">
-                    <div style="display: flex; align-items: flex-start; gap: 0.5rem; margin-bottom: 0.5rem;">
-                        <span style="color: #ef4444; margin-top: 0.125rem;">⚠️</span>
-                        <div>
-                            <p style="font-weight: 500;">Report concerns</p>
-                            <p style="font-size: 0.875rem; color: #6b7280;">
-                                If you believe an AI system is causing harm or discrimination
-                            </p>
-                        </div>
-                    </div>
-                    <div style="display: flex; align-items: flex-start; gap: 0.5rem; margin-bottom: 0.5rem;">
-                        <span style="color: #3b82f6; margin-top: 0.125rem;">💬</span>
-                        <div>
-                            <p style="font-weight: 500;">Ask questions</p>
-                            <p style="font-size: 0.875rem; color: #6b7280;">
-                                If you want to understand how a system works or affects you
-                            </p>
-                        </div>
-                    </div>
-                    <div style="display: flex; align-items: flex-start; gap: 0.5rem; margin-bottom: 0.5rem;">
-                        <span style="color: #22c55e; margin-top: 0.125rem;">👍</span>
-                        <div>
-                            <p style="font-weight: 500;">Make suggestions</p>
-                            <p style="font-size: 0.875rem; color: #6b7280;">
-                                If you have ideas for improving AI systems in the city
-                            </p>
-                        </div>
-                    </div>
-                </div>
-                <div style="padding-top: 1rem; border-top: 1px solid #e5e7eb;">
-                    <p style="font-size: 0.875rem; font-weight: 500;">What happens next?</p>
-                    <ul style="font-size: 0.875rem; color: #6b7280; list-style-type: disc; padding-left: 1.25rem; margin-top: 0.5rem;">
-                        <li>Your feedback is reviewed by the responsible department</li>
-                        <li>You'll receive a response within 10 working days</li>
-                        <li>With your permission, feedback may be published anonymously</li>
-                        <li>Feedback is used to improve AI systems and policies</li>
-                    </ul>
-                </div>
-            </div>
-            """, unsafe_allow_html=True)
-    
-    with tabs[2]:
-        # FAQ tab
-        st.markdown("""
-        <div class="card">
-            <h2 style="font-size: 1.5rem; font-weight: 600; margin-bottom: 1.5rem;">Frequently Asked Questions</h2>
-            <div style="display: flex; flex-direction: column; gap: 1.5rem;">
-                <div>
-                    <h3 style="font-size: 1.125rem; font-weight: 500; margin-bottom: 0.5rem;">How is my feedback used?</h3>
-                    <p style="color: #6b7280;">
-                        Your feedback is reviewed by the department responsible for the AI system. It helps identify
-                        issues, improve explanations, and shape future development. Feedback may lead to system audits,
-                        policy changes, or improvements to user interfaces.
-                    </p>
-                </div>
-                <div>
-                    <h3 style="font-size: 1.125rem; font-weight: 500; margin-bottom: 0.5rem;">Is my feedback anonymous?</h3>
-                    <p style="color: #6b7280;">
-                        By default, your personal information is kept private. Only if you explicitly consent will your
-                        feedback (without personal details) be shared publicly. You can always submit feedback completely
-                        anonymously.
-                    </p>
-                </div>
-                <div>
-                    <h3 style="font-size: 1.125rem; font-weight: 500; margin-bottom: 0.5rem;">How quickly will I get a response?</h3>
-                    <p style="color: #6b7280;">
-                        We aim to respond to all feedback within 10 working days. Complex issues may take longer to
-                        investigate, but you'll receive regular updates on progress.
-                    </p>
-                </div>
-                <div>
-                    <h3 style="font-size: 1.125rem; font-weight: 500; margin-bottom: 0.5rem;">What if I'm not satisfied with the response?</h3>
-                    <p style="color: #6b7280;">
-                        If you're not satisfied with the response to your feedback, you can escalate your concern to the
-                        Digital Rights Office. They provide independent oversight of AI systems in Amsterdam.
-                    </p>
-                </div>
-                <div>
-                    <h3 style="font-size: 1.125rem; font-weight: 500; margin-bottom: 0.5rem;">Can I report technical issues with this platform?</h3>
-                    <p style="color: #6b7280;">
-                        Yes, if you encounter any technical issues with the AI & Me platform itself, please use the
-                        "Report a Technical Issue" option in the feedback form or email support@aiandme.amsterdam.nl.
-                    </p>
-                </div>
-            </div>
-        </div>
-        """, unsafe_allow_html=True)
-
-def influence_page():
-    st.markdown("""
-    <h1 style="font-size: 1.875rem; font-weight: 700; margin-bottom: 0.5rem;">Influence AI in Amsterdam</h1>
-    <p style="color: #6b7280; font-size: 1.125rem; margin-bottom: 1.5rem;">
-        Participate in the co-design of AI systems and help shape the future of technology in your city.
-    </p>
-    """, unsafe_allow_html=True)
-    
-    # Tabs
-    tabs = st.tabs(["Participate", "Your Impact", "Policy Input"])
-    
-    with tabs[0]:
-        # Participate tab
-        col1, col2 = st.columns([2, 1])
-        
-        with col1:
-            st.markdown("""
-            <h2 style="font-size: 1.5rem; font-weight: 600; margin-bottom: 1.5rem;">Upcoming Opportunities</h2>
-            """, unsafe_allow_html=True)
-            
-            st.markdown("""
-            <div class="card">
-                <div style="margin-bottom: 0.75rem;">
-                    <span class="badge badge-secondary">Co-Design Workshop</span>
-                    <span class="badge badge-red">Only 12 spots left</span>
-                </div>
-                <h3 style="font-size: 1.25rem; font-weight: 600; margin-bottom: 0.5rem;">Traffic Management AI</h3>
-                <p style="color: #6b7280; margin-bottom: 1rem;">
-                    Help design a new AI system that will manage traffic flow in the city center. We want to hear from residents, commuters, and business owners.
-                </p>
-                <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin-bottom: 1.5rem;">
-                    <div style="display: flex; align-items: center; gap: 0.5rem;">
-                        <span style="color: #6b7280;">📅</span>
-                        <span style="font-size: 0.875rem;">June 15, 2023</span>
-                    </div>
-                    <div style="display: flex; align-items: center; gap: 0.5rem;">
-                        <span style="color: #6b7280;">🕔</span>
-                        <span style="font-size: 0.875rem;">18:00 - 20:00</span>
-                    </div>
-                    <div style="display: flex; align-items: center; gap: 0.5rem;">
-                        <span style="color: #6b7280;">📍</span>
-                        <span style="font-size: 0.875rem;">Public Library Amsterdam</span>
-                    </div>
-                </div>
-                <button style="width: 100%; background-color: #dc2626; color: white; padding: 0.75rem; border: none; border-radius: 0.375rem; font-weight: 500;">
-                    Register
-                </button>
-            </div>
-            """, unsafe_allow_html=True)
-            
-            st.markdown("""
-            <div class="card" style="margin-top: 1.5rem;">
-                <div style="margin-bottom: 0.75rem;">
-                    <span class="badge badge-secondary">Citizen Panel</span>
-                    <span class="badge badge-red">Only 8 spots left</span>
-                </div>
-                <h3 style="font-size: 1.25rem; font-weight: 600; margin-bottom: 0.5rem;">AI Ethics Guidelines Review</h3>
-                <p style="color: #6b7280; margin-bottom: 1rem;">
-                    Join a diverse panel of citizens to review and provide feedback on Amsterdam's AI ethics guidelines. No technical knowledge required.
-                </p>
-                <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin-bottom: 1.5rem;">
-                    <div style="display: flex; align-items: center; gap: 0.5rem;">
-                        <span style="color: #6b7280;">📅</span>
-                        <span style="font-size: 0.875rem;">June 22, 2023</span>
-                    </div>
-                    <div style="display: flex; align-items: center; gap: 0.5rem;">
-                        <span style="color: #6b7280;">🕔</span>
-                        <span style="font-size: 0.875rem;">13:00 - 16:00</span>
-                    </div>
-                    <div style="display: flex; align-items: center; gap: 0.5rem;">
-                        <span style="color: #6b7280;">📍</span>
-                        <span style="font-size: 0.875rem;">Pakhuis de Zwijger</span>
-                    </div>
-                </div>
-                <button style="width: 100%; background-color: #dc2626; color: white; padding: 0.75rem; border: none; border-radius: 0.375rem; font-weight: 500;">
-                    Register
-                </button>
-            </div>
-            """, unsafe_allow_html=True)
-            
-            st.markdown("""
-            <div class="card" style="margin-top: 1.5rem;">
-                <div style="margin-bottom: 0.75rem;">
-                    <span class="badge badge-secondary">Online Survey</span>
-                </div>
-                <h3 style="font-size: 1.25rem; font-weight: 600; margin-bottom: 0.5rem;">Neighborhood Safety Cameras</h3>
-                <p style="color: #6b7280; margin-bottom: 1rem;">
-                    Share your opinions on the proposed AI-powered safety camera system for residential neighborhoods. Survey takes approximately 15 minutes.
-                </p>
-                <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin-bottom: 1.5rem;">
-                    <div style="display: flex; align-items: center; gap: 0.5rem;">
-                        <span style="color: #6b7280;">📅</span>
-                        <span style="font-size: 0.875rem;">Open until July 5, 2023</span>
-                    </div>
-                    <div style="display: flex; align-items: center; gap: 0.5rem;">
-                        <span style="color: #6b7280;">🕔</span>
-                        <span style="font-size: 0.875rem;">Complete anytime</span>
-                    </div>
-                    <div style="display: flex; align-items: center; gap: 0.5rem;">
-                        <span style="color: #6b7280;">📍</span>
-                        <span style="font-size: 0.875rem;">Online</span>
-                    </div>
-                </div>
-                <button style="width: 100%; background-color: #dc2626; color: white; padding: 0.75rem; border: none; border-radius: 0.375rem; font-weight: 500;">
-                    Take Survey
-                </button>
-            </div>
-            """, unsafe_allow_html=True)
-            
-        with col2:
-            st.markdown("""
-            <div class="card">
-                <h3 style="font-size: 1.25rem; font-weight: 600; margin-bottom: 1rem;">Why Participate?</h3>
-                <p style="margin-bottom: 1rem;">
-                    Your participation helps ensure AI systems in Amsterdam reflect the needs and values of all citizens.
-                </p>
-                <div style="margin-bottom: 0.75rem;">
-                    <div style="display: flex; align-items: flex-start; gap: 0.5rem; margin-bottom: 0.75rem;">
-                        <span style="color: #dc2626; margin-top: 0.125rem;">👥</span>
-                        <div>
-                            <p style="font-weight: 500;">Diverse perspectives</p>
-                            <p style="font-size: 0.875rem; color: #6b7280;">
-                                We need input from people of all backgrounds and experiences
-                            </p>
-                        </div>
-                    </div>
-                    <div style="display: flex; align-items: flex-start; gap: 0.5rem; margin-bottom: 0.75rem;">
-                        <span style="color: #dc2626; margin-top: 0.125rem;">🗳️</span>
-                        <div>
-                            <p style="font-weight: 500;">Real influence</p>
-                            <p style="font-size: 0.875rem; color: #6b7280;">
-                                Your input directly shapes how systems are designed and implemented
-                            </p>
-                        </div>
-                    </div>
-                    <div style="display: flex; align-items: flex-start; gap: 0.5rem;">
-                        <span style="color: #dc2626; margin-top: 0.125rem;">📅</span>
-                        <div>
-                            <p style="font-weight: 500;">Early involvement</p>
-                            <p style="font-size: 0.875rem; color: #6b7280;">
-                                Participate before systems are finalized, when changes are easier to make
-                            </p>
-                        </div>
-                    </div>
-                </div>
-                <div style="padding-top: 1rem; border-top: 1px solid #e5e7eb;">
-                    <p style="font-size: 0.875rem; font-weight: 500;">Compensation for your time</p>
-                    <p style="font-size: 0.875rem; color: #6b7280; margin-top: 0.25rem;">
-                        Participants in workshops, panels, and testing sessions receive a €50 voucher for local businesses or VVV bonnen.
-                    </p>
-                </div>
-            </div>
-            
-            <div class="card" style="margin-top: 1.5rem;">
-                <h3 style="font-size: 1.25rem; font-weight: 600; margin-bottom: 1rem;">Stay Informed</h3>
-                <p style="margin-bottom: 1rem;">
-                    Sign up to receive notifications about new participation opportunities that match your interests.
-                </p>
-                <button style="width: 100%; background-color: #dc2626; color: white; padding: 0.75rem; border: none; border-radius: 0.375rem; font-weight: 500;">
-                    Subscribe
-                </button>
-            </div>
-            """, unsafe_allow_html=True)
-    
-    with tabs[1]:
-        # Your Impact tab
         col1, col2 = st.columns(2)
         
         with col1:
             st.markdown("""
             <div class="card">
-                <h2 style="font-size: 1.5rem; font-weight: 600; margin-bottom: 1.5rem;">Citizen Impact Stories</h2>
-                <div style="display: flex; flex-direction: column; gap: 1.5rem;">
-                    <div style="padding: 1rem; border: 1px solid #e5e7eb; border-radius: 0.5rem;">
-                        <div style="display: flex; align-items: flex-start; gap: 1rem;">
-                            <div style="width: 3rem; height: 3rem; border-radius: 9999px; background-color: #e5e7eb; flex-shrink: 0;"></div>
-                            <div>
-                                <h3 style="font-weight: 500;">Accessibility Improvements</h3>
-                                <p style="font-size: 0.875rem; color: #6b7280; margin-bottom: 0.5rem;">Fatima K., De Pijp resident</p>
-                                <p style="font-size: 0.875rem;">
-                                    "I participated in testing the waste collection app and pointed out it wasn't accessible for
-                                    screen readers. The team redesigned the interface, and now it works for everyone. It shows
-                                    they really listened to feedback."
-                                </p>
-                            </div>
+                <h3>What is AI in Amsterdam?</h3>
+                <p>The City of Amsterdam uses various AI systems to improve services, manage resources, and make decisions. These range from traffic management to social service allocation.</p>
+                <p>All systems are registered and explained here to ensure transparency and accountability.</p>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        with col2:
+            st.markdown("""
+            <div class="card">
+                <h3>Your Rights</h3>
+                <p>As a citizen of Amsterdam, you have the right to:</p>
+                <ul class="rights-list">
+                    <li>Know when AI is being used to make decisions affecting you</li>
+                    <li>Understand how these systems work in plain language</li>
+                    <li>Challenge automated decisions</li>
+                    <li>Provide feedback on AI systems</li>
+                </ul>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        st.markdown('<h3>AI Systems in Amsterdam</h3>', unsafe_allow_html=True)
+        
+        # Display AI systems as cards
+        systems = st.session_state.ai_systems
+        
+        # Create three columns
+        cols = st.columns(3)
+        
+        # Display each system in a card
+        for i, (_, system) in enumerate(systems.iterrows()):
+            with cols[i % 3]:
+                st.markdown(f"""
+                <div class="card">
+                    <div style="display: flex; justify-content: space-between; align-items: start;">
+                        <h4>{system['title']}</h4>
+                        {risk_badge(system['risk_level'])}
+                    </div>
+                    <p>{system['description']}</p>
+                    <div style="margin: 0.5rem 0;">
+                        {department_badge(system['department'])}
+                    </div>
+                    <p class="feedback-count">
+                        <span style="margin-right: 0.25rem;">💬</span> {system['feedback_count']} citizen feedback
+                    </p>
+                    <div style="display: flex; justify-content: space-between; margin-top: 1rem;">
+                        <a href="/?page=system_details&id={system['id']}">Understand</a>
+                        <a href="/?page=system_feedback&id={system['id']}">Give Feedback</a>
+                    </div>
+                </div>
+                """, unsafe_allow_html=True)
+        
+        st.markdown('</div>', unsafe_allow_html=True)
+    
+    # Question tab
+    with tab2:
+        st.markdown('<div class="tab-content">', unsafe_allow_html=True)
+        
+        col1, col2 = st.columns([2, 1])
+        
+        with col1:
+            st.markdown("""
+            <div class="card">
+                <h3>Ask About AI in Amsterdam</h3>
+                <p>Submit your questions about how AI is used in the city</p>
+            </div>
+            """, unsafe_allow_html=True)
+            
+            question = st.text_area("Your Question", placeholder="e.g., How does the housing allocation system decide who gets priority?", height=120)
+            
+            system_options = ["Select a system"] + list(systems['title'])
+            selected_system = st.selectbox("Related AI System (optional)", system_options)
+            
+            make_public = st.checkbox("Make my question public (anonymous)")
+            
+            if st.button("Submit Question"):
+                if question:
+                    st.success("Your question has been submitted. A representative will respond within 5 business days.")
+                else:
+                    st.error("Please enter a question before submitting.")
+        
+        with col2:
+            st.markdown("""
+            <div class="card">
+                <h3>Recent Public Questions</h3>
+                <p>Questions from other citizens</p>
+            </div>
+            """, unsafe_allow_html=True)
+            
+            # Display recent questions
+            questions = st.session_state.questions
+            for _, question in questions.iterrows():
+                system_name = systems[systems['id'] == question['system_id']].iloc[0]['title']
+                
+                st.markdown(f"""
+                <div class="question-card">
+                    <p class="question-text">{question['question']}</p>
+                    <div style="margin-bottom: 0.5rem;">
+                        <span class="department-badge">{system_name}</span>
+                        <span class="question-date">{format_date(question['date'])}</span>
+                    </div>
+                </div>
+                """, unsafe_allow_html=True)
+            
+            st.markdown('<a href="/?page=all_questions">View All Questions</a>', unsafe_allow_html=True)
+        
+        st.markdown('</div>', unsafe_allow_html=True)
+    
+    # Influence tab
+    with tab3:
+        st.markdown('<div class="tab-content">', unsafe_allow_html=True)
+        
+        col1, col2 = st.columns([2, 1])
+        
+        with col1:
+            st.markdown("""
+            <div class="card">
+                <h3>Share Your Experience</h3>
+                <p>Tell us how AI systems have affected you or your community</p>
+            </div>
+            """, unsafe_allow_html=True)
+            
+            system_options = ["Select a system"] + list(systems['title'])
+            selected_system = st.selectbox("Which AI System?", system_options, key="feedback_system")
+            
+            experience = st.text_area("Your Experience", placeholder="Describe how this AI system affected you or your community...", height=120)
+            
+            impact_type = st.radio(
+                "Impact Type",
+                ["Positive", "Negative", "Neutral", "Confusing", "Concerning"]
+            )
+            
+            anonymous = st.checkbox("Submit anonymously")
+            
+            if st.button("Submit Feedback"):
+                if experience and selected_system != "Select a system":
+                    st.success("Thank you for your feedback! It will help us improve AI systems in Amsterdam.")
+                else:
+                    st.error("Please select a system and describe your experience before submitting.")
+        
+        with col2:
+            st.markdown("""
+            <div class="card">
+                <h3>Upcoming Co-Design Sessions</h3>
+                <p>Help shape the future of AI in Amsterdam</p>
+            </div>
+            """, unsafe_allow_html=True)
+            
+            # Display upcoming sessions
+            sessions = st.session_state.codesign_sessions
+            for _, session in sessions.iterrows():
+                system_name = systems[systems['id'] == session['system_id']].iloc[0]['title']
+                spots_class = "spots-available" if session['spots_left'] > 0 else "spots-full"
+                spots_text = f"{session['spots_left']} spots left" if session['spots_left'] > 0 else "Fully booked"
+                
+                st.markdown(f"""
+                <div class="session-card">
+                    <h4>{session['title']}</h4>
+                    <p class="session-date">{session['date']} • {session['time']}</p>
+                    <p>{session['location']}</p>
+                    <p class="{spots_class}">{spots_text}</p>
+                </div>
+                """, unsafe_allow_html=True)
+            
+            st.markdown('<a href="/?page=all_sessions">View All Sessions</a>', unsafe_allow_html=True)
+        
+        st.markdown('<h3>Impact of Your Feedback</h3>', unsafe_allow_html=True)
+        
+        st.markdown("""
+        <div class="card">
+            <div class="impact-card">
+                <div class="impact-icon">👍</div>
+                <div class="impact-content">
+                    <h4>Housing Allocation Algorithm Updated</h4>
+                    <p>After 87 citizen feedback reports highlighting bias against single-parent households, the algorithm was audited and updated in March 2023.</p>
+                    <p class="impact-date">Implemented: March 2023</p>
+                </div>
+            </div>
+            
+            <div class="impact-card">
+                <div class="impact-icon">🛡️</div>
+                <div class="impact-content">
+                    <h4>Public Space Monitoring Privacy Enhancements</h4>
+                    <p>Citizen concerns led to improved anonymization techniques and clearer signage about camera monitoring in public spaces.</p>
+                    <p class="impact-date">Implemented: January 2023</p>
+                </div>
+            </div>
+            
+            <div class="impact-card">
+                <div class="impact-icon">💬</div>
+                <div class="impact-content">
+                    <h4>Fraud Detection Explanation Improvements</h4>
+                    <p>Based on feedback about confusing notifications, the system now provides clearer explanations when flagging potential issues.</p>
+                    <p class="impact-date">Implemented: December 2022</p>
+                </div>
+            </div>
+        </div>
+        """, unsafe_allow_html=True)
+        
+        st.markdown('</div>', unsafe_allow_html=True)
+
+# System details page
+def system_details_page(system_id):
+    system = st.session_state.ai_systems[st.session_state.ai_systems['id'] == system_id].iloc[0]
+    
+    # Back button
+    st.markdown('<a href="/" style="display: inline-flex; align-items: center; margin-bottom: 1rem;"><span style="margin-right: 0.25rem;">←</span> Back to Overview</a>', unsafe_allow_html=True)
+    
+    # Header
+    st.markdown(f"""
+    <div style="background-color: #1e293b; color: white; padding: 1.5rem; border-radius: 0.5rem; margin-bottom: 1.5rem;">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+            <div>
+                <h1>{system['title']}</h1>
+                <p>Department of {system['department']}</p>
+            </div>
+            <div>
+                {risk_badge(system['risk_level'])}
+            </div>
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
+    
+    # Main content
+    col1, col2 = st.columns([2, 1])
+    
+    with col1:
+        tab1, tab2, tab3 = st.tabs(["Understand", "Question", "Influence"])
+        
+        # Understand tab
+        with tab1:
+            st.markdown("""
+            <div class="card">
+                <h3>What is this system for?</h3>
+            """, unsafe_allow_html=True)
+            
+            st.markdown(f"<p>{system['description']}</p>", unsafe_allow_html=True)
+            
+            st.markdown("""
+                <h3 style="margin-top: 1.5rem;">How does it affect me?</h3>
+            """, unsafe_allow_html=True)
+            
+            if system['id'] == 1:  # Housing Allocation
+                st.markdown("""
+                <p>If you've applied for social housing in Amsterdam, this system may influence your position on the waiting list and the housing options presented to you. The system considers factors like your household composition, current housing situation, time on the waiting list, and special circumstances.</p>
+                <p><strong>Important:</strong> This system does not make final decisions. Housing officers review the system's recommendations before making allocation decisions.</p>
+                """, unsafe_allow_html=True)
+            elif system['id'] == 2:  # Traffic Flow
+                st.markdown("""
+                <p>This system affects your daily commute by optimizing traffic light timings to reduce congestion. It may adjust signal patterns based on real-time traffic conditions, potentially changing your wait times at intersections throughout the city.</p>
+                <p><strong>Important:</strong> The system prioritizes overall traffic flow efficiency while maintaining safety standards.</p>
+                """, unsafe_allow_html=True)
+            elif system['id'] == 3:  # Fraud Detection
+                st.markdown("""
+                <p>If you apply for benefits or services from the city, this system may analyze your application to identify potential inconsistencies. It does not make final decisions about fraud, but flags cases for human review.</p>
+                <p><strong>Important:</strong> Being flagged by the system does not mean you've done anything wrong. Human reviewers carefully evaluate all flagged cases.</p>
+                """, unsafe_allow_html=True)
+            elif system['id'] == 4:  # Public Space Monitoring
+                st.markdown("""
+                <p>This system monitors public spaces to detect unusual crowding or incidents that may require attention. It does not track or identify individuals but analyzes patterns in anonymized video feeds.</p>
+                <p><strong>Important:</strong> The system is designed with privacy protections and does not use facial recognition technology.</p>
+                """, unsafe_allow_html=True)
+            else:
+                st.markdown("""
+                <p>This system may affect various aspects of city services you use. The specific impacts depend on how you interact with the relevant department.</p>
+                """, unsafe_allow_html=True)
+            
+            st.markdown("""
+                <h3 style="margin-top: 1.5rem;">What data does it use?</h3>
+                <div class="explainer-box">
+                    <ul class="data-list">
+            """, unsafe_allow_html=True)
+            
+            for data_item in system['data_used']:
+                st.markdown(f"<li>{data_item}</li>", unsafe_allow_html=True)
+            
+            st.markdown("""
+                    </ul>
+                </div>
+                
+                <h3 style="margin-top: 1.5rem;">What rights do I have?</h3>
+                <div class="explainer-box">
+                    <ul class="rights-list">
+            """, unsafe_allow_html=True)
+            
+            for right in system['rights']:
+                st.markdown(f"<li>{right}</li>", unsafe_allow_html=True)
+            
+            st.markdown("""
+                    </ul>
+                </div>
+            </div>
+            """, unsafe_allow_html=True)
+            
+            # Explainability feedback
+            st.markdown("""
+            <div style="margin-top: 2rem; border-top: 1px solid #e2e8f0; padding-top: 1rem;">
+                <h3>Was this explanation helpful?</h3>
+            </div>
+            """, unsafe_allow_html=True)
+            
+            col1, col2 = st.columns(2)
+            with col1:
+                if st.button("👍 Yes, it was clear"):
+                    st.success("Thank you for your feedback!")
+            with col2:
+                if st.button("👎 No, I'm still confused"):
+                    st.text_area("Please tell us what was confusing or what questions you still have...", key="confusion_feedback")
+                    if st.button("Submit Feedback", key="submit_confusion"):
+                        st.success("Thank you for your feedback! We'll use it to improve our explanations.")
+        
+        # Question tab
+        with tab2:
+            st.markdown("""
+            <div class="card">
+                <h3>Ask a Question</h3>
+                <p>Have questions about how this system works or how it might affect you? Submit your question below and a department representative will respond within 5 business days.</p>
+            </div>
+            """, unsafe_allow_html=True)
+            
+            question = st.text_area("Your Question", placeholder=f"e.g., How does the {system['title']} consider my specific situation?", height=120)
+            
+            make_public = st.checkbox("Make my question public (anonymous)")
+            
+            if st.button("Submit Question", key="submit_system_question"):
+                if question:
+                    st.success("Your question has been submitted. A representative will respond within 5 business days.")
+                else:
+                    st.error("Please enter a question before submitting.")
+            
+            st.markdown("""
+            <h3 style="margin-top: 2rem;">Frequently Asked Questions</h3>
+            """, unsafe_allow_html=True)
+            
+            # Filter questions for this system
+            system_questions = st.session_state.questions[st.session_state.questions['system_id'] == system_id]
+            
+            for _, question in system_questions.iterrows():
+                st.markdown(f"""
+                <div class="question-card">
+                    <p class="question-text">{question['question']}</p>
+                    <p class="answer-text">{question['answer']}</p>
+                    <p class="question-date">{format_date(question['date'])}</p>
+                </div>
+                """, unsafe_allow_html=True)
+        
+        # Influence tab
+        with tab3:
+            st.markdown("""
+            <div class="card">
+                <h3>Share Your Experience</h3>
+                <p>Your feedback helps us improve this system. Share how it has affected you or your community.</p>
+            </div>
+            """, unsafe_allow_html=True)
+            
+            experience = st.text_area("Your Experience", placeholder=f"Describe your experience with the {system['title']}...", height=120)
+            
+            impact = st.radio("How did this system affect you?", ["Positively", "Negatively", "Neutral"])
+            
+            contact_me = st.checkbox("I'm willing to be contacted for follow-up (optional)")
+            
+            if contact_me:
+                email = st.text_input("Email (optional)")
+            
+            if st.button("Submit Feedback", key="submit_system_feedback"):
+                if experience:
+                    st.success("Thank you for your feedback! It will help us improve this system.")
+                else:
+                    st.error("Please describe your experience before submitting.")
+            
+            st.markdown("""
+            <h3 style="margin-top: 2rem;">Recent System Changes</h3>
+            """, unsafe_allow_html=True)
+            
+            if system['id'] == 1:  # Housing Allocation
+                st.markdown("""
+                <div class="impact-card">
+                    <div class="impact-icon">👨‍👩‍👧‍👦</div>
+                    <div class="impact-content">
+                        <h4>Improved consideration for single-parent households</h4>
+                        <p>Based on citizen feedback, the system was updated to better account for the unique challenges faced by single-parent households.</p>
+                        <p class="impact-date">Implemented: March 2023</p>
+                    </div>
+                </div>
+                
+                <div class="impact-card">
+                    <div class="impact-icon">📄</div>
+                    <div class="impact-content">
+                        <h4>Clearer explanation of decisions</h4>
+                        <p>The system now provides more detailed explanations when housing offers are made, helping applicants understand why they were matched with specific properties.</p>
+                        <p class="impact-date">Implemented: January 2023</p>
+                    </div>
+                </div>
+                """, unsafe_allow_html=True)
+            elif system['id'] == 2:  # Traffic Flow
+                st.markdown("""
+                <div class="impact-card">
+                    <div class="impact-icon">🚌</div>
+                    <div class="impact-content">
+                        <h4>Public transport prioritization</h4>
+                        <p>Based on citizen feedback, the system now gives higher priority to public transport vehicles at intersections.</p>
+                        <p class="impact-date">Implemented: February 2023</p>
+                    </div>
+                </div>
+                """, unsafe_allow_html=True)
+            elif system['id'] == 3:  # Fraud Detection
+                st.markdown("""
+                <div class="impact-card">
+                    <div class="impact-icon">📝</div>
+                    <div class="impact-content">
+                        <h4>Improved notification clarity</h4>
+                        <p>Based on citizen feedback about confusing notifications, the system now provides clearer explanations when flagging potential issues.</p>
+                        <p class="impact-date">Implemented: December 2022</p>
+                    </div>
+                </div>
+                """, unsafe_allow_html=True)
+            elif system['id'] == 4:  # Public Space Monitoring
+                st.markdown("""
+                <div class="impact-card">
+                    <div class="impact-icon">🔒</div>
+                    <div class="impact-content">
+                        <h4>Enhanced privacy protections</h4>
+                        <p>Based on citizen concerns, we've implemented improved anonymization techniques and added clearer signage in monitored areas.</p>
+                        <p class="impact-date">Implemented: January 2023</p>
+                    </div>
+                </div>
+                """, unsafe_allow_html=True)
+            
+            # Co-design session for this system
+            system_sessions = st.session_state.codesign_sessions[st.session_state.codesign_sessions['system_id'] == system_id]
+            
+            if not system_sessions.empty:
+                session = system_sessions.iloc[0]
+                spots_class = "spots-available" if session['spots_left'] > 0 else "spots-full"
+                spots_text = f"{session['spots_left']} spots left" if session['spots_left'] > 0 else "Fully booked"
+                
+                st.markdown(f"""
+                <div style="margin-top: 2rem; background-color: #eff6ff; padding: 1rem; border-radius: 0.5rem;">
+                    <h3 style="color: #1e40af; display: flex; align-items: center;">
+                        <span style="margin-right: 0.5rem;">ℹ️</span> Upcoming Co-Design Session
+                    </h3>
+                    <p style="color: #1e3a8a; margin-top: 0.5rem;">
+                        Join us on {session['date']} ({session['time']}) at {session['location']} to help redesign aspects of this system.
+                    </p>
+                    <p class="{spots_class}" style="margin-top: 0.5rem;">{spots_text}</p>
+                </div>
+                """, unsafe_allow_html=True)
+                
+                if session['spots_left'] > 0:
+                    if st.button("Register to Participate"):
+                        st.success("Thank you for registering! You will receive a confirmation email with details.")
+    
+    with col2:
+        # Trust Indicators
+        st.markdown("""
+        <div class="card">
+            <h3>Trust Indicators</h3>
+        """, unsafe_allow_html=True)
+        
+        # Independent Audit
+        audit_value = "Independent" in system['audit_info']['audited_by']
+        st.markdown(f"""
+        <div class="trust-indicator">
+            <div class="trust-label">Independent Audit</div>
+            <div class="trust-details">Last audited: {system['audit_info']['last_audit']} by {system['audit_info']['audited_by']}</div>
+            <div class="trust-bar-bg">
+                <div class="trust-bar {'trust-bar-yes' if audit_value else 'trust-bar-no'}" style="width: {'100%' if audit_value else '0%'};"></div>
+            </div>
+        </div>
+        """, unsafe_allow_html=True)
+        
+        # Bias Testing
+        bias_value = system['audit_info']['bias_tested']
+        st.markdown(f"""
+        <div class="trust-indicator">
+            <div class="trust-label">Bias Testing</div>
+            <div class="trust-details">{'Tested for bias against protected groups' if bias_value else 'Not tested for bias'}</div>
+            <div class="trust-bar-bg">
+                <div class="trust-bar {'trust-bar-yes' if bias_value else 'trust-bar-no'}" style="width: {'100%' if bias_value else '0%'};"></div>
+            </div>
+        </div>
+        """, unsafe_allow_html=True)
+        
+        # Citizen Consultation
+        citizen_value = system['audit_info']['citizen_consulted']
+        st.markdown(f"""
+        <div class="trust-indicator">
+            <div class="trust-label">Citizen Consultation</div>
+            <div class="trust-details">{'Citizens were consulted during development' if citizen_value else 'No citizen consultation'}</div>
+            <div class="trust-bar-bg">
+                <div class="trust-bar {'trust-bar-yes' if citizen_value else 'trust-bar-no'}" style="width: {'100%' if citizen_value else '0%'};"></div>
+            </div>
+        </div>
+        """, unsafe_allow_html=True)
+        
+        # Human Oversight (assumed for all systems)
+        st.markdown(f"""
+        <div class="trust-indicator">
+            <div class="trust-label">Human Oversight</div>
+            <div class="trust-details">All decisions are reviewed by department staff</div>
+            <div class="trust-bar-bg">
+                <div class="trust-bar trust-bar-yes" style="width: 100%;"></div>
+            </div>
+        </div>
+        """, unsafe_allow_html=True)
+        
+        # Transparency
+        transparency_value = len(system['data_used']) >= 4 and len(system['rights']) >= 3
+        st.markdown(f"""
+        <div class="trust-indicator">
+            <div class="trust-label">Transparency</div>
+            <div class="trust-details">{'Full algorithm documentation is publicly available' if transparency_value else 'Limited documentation available'}</div>
+            <div class="trust-bar-bg">
+                <div class="trust-bar {'trust-bar-yes' if transparency_value else 'trust-bar-no'}" style="width: {'100%' if transparency_value else '0%'};"></div>
+            </div>
+        </div>
+        """, unsafe_allow_html=True)
+        
+        st.markdown("""
+        </div>
+        """, unsafe_allow_html=True)
+        
+        # System Details
+        st.markdown("""
+        <div class="card">
+            <h3>System Details</h3>
+        """, unsafe_allow_html=True)
+        
+        st.markdown(f"""
+        <div style="margin-bottom: 0.75rem;">
+            <p style="color: #6b7280; font-size: 0.875rem;">Department</p>
+            <p style="font-weight: 500;">{system['department']}</p>
+        </div>
+        
+        <div style="margin-bottom: 0.75rem;">
+            <p style="color: #6b7280; font-size: 0.875rem;">Last Updated</p>
+            <p style="font-weight: 500;">{format_date(system['last_updated'])}</p>
+        </div>
+        
+        <div style="margin-bottom: 0.75rem;">
+            <p style="color: #6b7280; font-size: 0.875rem;">Citizen Feedback</p>
+            <p style="font-weight: 500;">{system['feedback_count']} reports</p>
+        </div>
+        
+        <div style="margin-bottom: 0.75rem;">
+            <p style="color: #6b7280; font-size: 0.875rem;">Technical Documentation</p>
+            <a href="#" style="color: #2563eb;">View Technical Details</a>
+        </div>
+        
+        <div>
+            <p style="color: #6b7280; font-size: 0.875rem;">Data Protection Impact Assessment</p>
+            <a href="#" style="color: #2563eb;">View Assessment</a>
+        </div>
+        """, unsafe_allow_html=True)
+        
+        st.markdown("""
+        </div>
+        """, unsafe_allow_html=True)
+
+# Housing allocation simulator
+def housing_simulator_page():
+    st.markdown('<a href="/" style="display: inline-flex; align-items: center; margin-bottom: 1rem;"><span style="margin-right: 0.25rem;">←</span> Back to Overview</a>', unsafe_allow_html=True)
+    
+    st.markdown("""
+    <div style="background-color: #1e293b; color: white; padding: 1.5rem; border-radius: 0.5rem; margin-bottom: 1.5rem;">
+        <h1>Civic AI Simulator</h1>
+        <p>Explore how AI systems make decisions in Amsterdam</p>
+    </div>
+    """, unsafe_allow_html=True)
+    
+    st.markdown("""
+    <div class="card">
+        <h2>Housing Allocation Simulator</h2>
+        <p>See how the Housing Allocation Assistant might evaluate your application</p>
+        
+        <div style="background-color: #fff7ed; border: 1px solid #fdba74; border-radius: 0.375rem; padding: 1rem; margin: 1rem 0; display: flex; align-items: flex-start;">
+            <span style="color: #c2410c; margin-right: 0.75rem; font-size: 1.25rem;">⚠️</span>
+            <div>
+                <p style="font-weight: 500; color: #9a3412; margin-bottom: 0.25rem;">This is a simplified simulation</p>
+                <p style="color: #9a3412; font-size: 0.875rem;">This simulator provides a general idea of how the system works, but the actual algorithm is more complex and considers additional factors. Results are for educational purposes only.</p>
+            </div>
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
+    
+    col1, col2 = st.columns(2)
+    
+    with col1:
+        st.markdown("<h3>Your Situation</h3>", unsafe_allow_html=True)
+        
+        waiting_time = st.slider("Years on waiting list", 0, 10, 5)
+        household_size = st.slider("Household size", 1, 6, 2)
+        income = st.slider("Annual household income (€)", 10000, 60000, 30000, step=1000)
+        
+        current_housing = st.selectbox(
+            "Current housing situation",
+            ["Renting privately", "Temporary accommodation", "Sharing with family/friends", "Homeless/emergency housing"],
+            index=0
+        )
+        
+        neighborhood_preference = st.selectbox(
+            "Neighborhood preference",
+            ["Any neighborhood", "Centrum", "West", "Oost", "Zuid", "Noord"],
+            index=0
+        )
+        
+        medical_need = st.checkbox("Medical or accessibility needs")
+    
+    with col2:
+        if 'simulation_run' not in st.session_state:
+            st.session_state.simulation_run = False
+        
+        if not st.session_state.simulation_run:
+            st.markdown("""
+            <div style="height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 2rem;">
+                <div style="background-color: #f1f5f9; border-radius: 9999px; padding: 1.5rem; margin-bottom: 1rem;">
+                    <span style="font-size: 2rem;">ℹ️</span>
+                </div>
+                <h3>See how the system evaluates your case</h3>
+                <p style="color: #6b7280; margin-bottom: 1.5rem;">
+                    Adjust the sliders and options on the left to represent your situation, then run the simulation to see how the system might prioritize your application.
+                </p>
+            </div>
+            """, unsafe_allow_html=True)
+            
+            if st.button("Run Simulation"):
+                st.session_state.simulation_run = True
+                st.experimental_rerun()
+        else:
+            # Calculate priority score (simplified version of the algorithm)
+            score = 0
+            
+            # Waiting time (40% weight)
+            score += (waiting_time / 10) * 40
+            
+            # Household needs (30% weight)
+            household_score = 30 if household_size > 3 else household_size * 10
+            score += household_score
+            
+            # Special circumstances (20% weight)
+            if medical_need:
+                score += 20
+            
+            if current_housing == "Homeless/emergency housing":
+                score += 20
+            elif current_housing == "Temporary accommodation":
+                score += 15
+            else:
+                score += 5
+            
+            # Neighborhood preference (10% weight)
+            if neighborhood_preference != "Any neighborhood":
+                score -= 5  # Slight penalty for being selective
+            
+            # Ensure score is between 0 and 100
+            score = max(0, min(100, round(score)))
+            
+            # Determine priority level
+            if score >= 80:
+                priority = "High"
+                priority_color = "emerald"
+                wait_time = "6-12 months"
+            elif score >= 50:
+                priority = "Medium"
+                priority_color = "amber"
+                wait_time = "1-2 years"
+            else:
+                priority = "Low"
+                priority_color = "red"
+                wait_time = "2+ years"
+            
+            # Display results
+            st.markdown("<h3>Simulation Results</h3>", unsafe_allow_html=True)
+            
+            st.markdown(f"""
+            <div style="background-color: white; border: 1px solid #e2e8f0; border-radius: 0.5rem; padding: 1.5rem; margin-bottom: 1.5rem;">
+                <div style="text-align: center; margin-bottom: 1.5rem;">
+                    <div style="font-size: 3rem; font-weight: 700; margin-bottom: 0.5rem;">{score}</div>
+                    <div style="color: #6b7280;">Priority Score (out of 100)</div>
+                </div>
+                
+                <div style="width: 100%; background-color: #f1f5f9; height: 0.75rem; border-radius: 9999px; margin-bottom: 1.5rem;">
+                    <div style="height: 0.75rem; border-radius: 9999px; background-color: {'#10b981' if priority_color == 'emerald' else '#f59e0b' if priority_color == 'amber' else '#ef4444'}; width: {score}%;"></div>
+                </div>
+                
+                <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem;">
+                    <div style="background-color: #f8fafc; padding: 1rem; border-radius: 0.375rem;">
+                        <div style="color: #6b7280; font-size: 0.875rem; margin-bottom: 0.25rem;">Priority Level</div>
+                        <div style="font-weight: 700; color: {'#10b981' if priority_color == 'emerald' else '#f59e0b' if priority_color == 'amber' else '#ef4444'}; display: flex; align-items: center;">
+                            <span style="margin-right: 0.25rem;">{'✓' if priority == 'High' else 'ℹ️' if priority == 'Medium' else '⚠️'}</span>
+                            {priority}
                         </div>
                     </div>
-                    
-                    <div style="padding: 1rem; border: 1px solid #e5e7eb; border-radius: 0.5rem;">
-                        <div style="display: flex; align-items: flex-start; gap: 1rem;">
-                            <div style="width: 3rem; height: 3rem; border-radius: 9999px; background-color: #e5e7eb; flex-shrink: 0;"></div>
-                            <div>
-                                <h3 style="font-weight: 500;">Privacy Protections Added</h3>
-                                <p style="font-size: 0.875rem; color: #6b7280; margin-bottom: 0.5rem;">Jan V., Oost resident</p>
-                                <p style="font-size: 0.875rem;">
-                                    "During a citizen panel on crowd monitoring, I raised concerns about facial recognition. The
-                                    final system now uses anonymous counting instead, which still achieves the goal without
-                                    compromising privacy."
-                                </p>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div style="padding: 1rem; border: 1px solid #e5e7eb; border-radius: 0.5rem;">
-                        <div style="display: flex; align-items: flex-start; gap: 1rem;">
-                            <div style="width: 3rem; height: 3rem; border-radius: 9999px; background-color: #e5e7eb; flex-shrink: 0;"></div>
-                            <div>
-                                <h3 style="font-weight: 500;">Multilingual Support Added</h3>
-                                <p style="font-size: 0.875rem; color: #6b7280; margin-bottom: 0.5rem;">Sophia L., Nieuw-West resident</p>
-                                <p style="font-size: 0.875rem;">
-                                    "I suggested that the city services chatbot needed to support more languages. Now it works
-                                    in Dutch, English, Arabic, and Turkish, making it accessible to more residents."
-                                </p>
-                            </div>
-                        </div>
+                    <div style="background-color: #f8fafc; padding: 1rem; border-radius: 0.375rem;">
+                        <div style="color: #6b7280; font-size: 0.875rem; margin-bottom: 0.25rem;">Est. Wait Time</div>
+                        <div style="font-weight: 700;">{wait_time}</div>
                     </div>
                 </div>
             </div>
             """, unsafe_allow_html=True)
             
-        with col2:
-            st.markdown("""
-            <div class="card">
-                <h2 style="font-size: 1.5rem; font-weight: 600; margin-bottom: 1.5rem;">Changes Made Based on Citizen Input</h2>
-                <div style="display: flex; flex-direction: column; gap: 1.5rem;">
-                    <div>
-                        <h3 style="font-size: 1.125rem; font-weight: 500; margin-bottom: 0.5rem;">Parking Enforcement AI</h3>
-                        <div style="display: flex; flex-direction: column; gap: 0.5rem;">
-                            <div style="display: flex; align-items: flex-start; gap: 0.5rem;">
-                                <span class="badge badge-secondary" style="margin-top: 0.125rem;">Before</span>
-                                <p style="font-size: 0.875rem;">System stored all vehicle images for 30 days</p>
-                            </div>
-                            <div style="display: flex; align-items: flex-start; gap: 0.5rem;">
-                                <span class="badge badge-green" style="margin-top: 0.125rem;">After</span>
-                                <p style="font-size: 0.875rem;">
-                                    Images deleted immediately after processing unless violation detected
-                                </p>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div>
-                        <h3 style="font-size: 1.125rem; font-weight: 500; margin-bottom: 0.5rem;">Social Housing Allocation</h3>
-                        <div style="display: flex; flex-direction: column; gap: 0.5rem;">
-                            <div style="display: flex; align-items: flex-start; gap: 0.5rem;">
-                                <span class="badge badge-secondary" style="margin-top: 0.125rem;">Before</span>
-                                <p style="font-size: 0.875rem;">Complex algorithm with limited explanation</p>
-                            </div>
-                            <div style="display: flex; align-items: flex-start; gap: 0.5rem;">
-                                <span class="badge badge-green" style="margin-top: 0.125rem;">After</span>
-                                <p style="font-size: 0.875rem;">Simplified scoring system with detailed personalized explanations</p>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div>
-                        <h3 style="font-size: 1.125rem; font-weight: 500; margin-bottom: 0.5rem;">Crowd Monitoring</h3>
-                        <div style="display: flex; flex-direction: column; gap: 0.5rem;">
-                            <div style="display: flex; align-items: flex-start; gap: 0.5rem;">
-                                <span class="badge badge-secondary" style="margin-top: 0.125rem;">Before</span>
-                                <p style="font-size: 0.875rem;">No public information about system locations</p>
-                            </div>
-                            <div style="display: flex; align-items: flex-start; gap: 0.5rem;">
-                                <span class="badge badge-green" style="margin-top: 0.125rem;">After</span>
-                                <p style="font-size: 0.875rem;">
-                                    Interactive map showing all monitoring locations and public dashboard
-                                </p>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div style="padding-top: 1rem; border-top: 1px solid #e5e7eb;">
-                        <h3 style="font-weight: 500; margin-bottom: 0.5rem;">Impact by Numbers</h3>
-                        <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem;">
-                            <div style="padding: 0.75rem; background-color: #f3f4f6; border-radius: 0.5rem; text-align: center;">
-                                <p style="font-size: 1.5rem; font-weight: 700; color: #dc2626;">1,240</p>
-                                <p style="font-size: 0.75rem; color: #6b7280;">Citizens participated in 2022</p>
-                            </div>
-                            <div style="padding: 0.75rem; background-color: #f3f4f6; border-radius: 0.5rem; text-align: center;">
-                                <p style="font-size: 1.5rem; font-weight: 700; color: #dc2626;">76%</p>
-                                <p style="font-size: 0.75rem; color: #6b7280;">Of feedback led to changes</p>
-                            </div>
-                        </div>
-                    </div>
+            st.markdown("<h4>Key Factors in Your Score</h4>", unsafe_allow_html=True)
+            
+            waiting_points = round((waiting_time / 10) * 40)
+            household_points = household_size > 3 and 30 or household_size * 10
+            
+            special_points = 0
+            if medical_need:
+                special_points += 20
+            
+            if current_housing == "Homeless/emergency housing":
+                special_points += 20
+            elif current_housing == "Temporary accommodation":
+                special_points += 15
+            else:
+                special_points += 5
+            
+            neighborhood_points = 5 if neighborhood_preference != "Any neighborhood" else 10
+            
+            st.markdown(f"""
+            <div style="margin-bottom: 1rem;">
+                <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+                    <span>Waiting time (40%)</span>
+                    <span style="font-weight: 500;">{waiting_points} points</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+                    <span>Household needs (30%)</span>
+                    <span style="font-weight: 500;">{household_points} points</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+                    <span>Special circumstances (20%)</span>
+                    <span style="font-weight: 500;">{special_points} points</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+                    <span>Neighborhood preference (10%)</span>
+                    <span style="font-weight: 500;">{neighborhood_points} points</span>
                 </div>
             </div>
             """, unsafe_allow_html=True)
+            
+            col1, col2 = st.columns(2)
+            with col1:
+                if st.button("Adjust Parameters"):
+                    st.session_state.simulation_run = False
+                    st.experimental_rerun()
+            with col2:
+                if st.button("Save Results"):
+                    st.success("Results saved to your profile.")
     
-    with tabs[2]:
-        # Policy Input tab
+    st.markdown("<h3 style='text-align: center; margin-top: 2rem;'>Try Other AI Simulators</h3>", unsafe_allow_html=True)
+    
+    col1, col2, col3 = st.columns(3)
+    
+    with col1:
         st.markdown("""
-        <div class="card">
-            <h2 style="font-size: 1.5rem; font-weight: 600; margin-bottom: 1.5rem;">Help Shape AI Policy in Amsterdam</h2>
-            <p style="margin-bottom: 1.5rem;">
-                Amsterdam is developing policies to govern the use of AI in the city. Your input helps ensure these
-                policies reflect citizen values and concerns.
-            </p>
-
-            <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 2rem; margin-bottom: 2rem;">
-                <div style="padding: 1.5rem; border: 1px solid #e5e7eb; border-radius: 0.5rem;">
-                    <h3 style="font-size: 1.25rem; font-weight: 600; margin-bottom: 1rem;">Current Consultations</h3>
-                    <div style="display: flex; flex-direction: column; gap: 1rem;">
-                        <div>
-                            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.25rem;">
-                                <h4 style="font-weight: 500;">Draft AI Ethics Framework</h4>
-                                <span class="badge badge-secondary">Open</span>
-                            </div>
-                            <p style="font-size: 0.875rem; color: #6b7280; margin-bottom: 0.5rem;">Closes July 15, 2023</p>
-                            <p style="font-size: 0.875rem; margin-bottom: 0.75rem;">
-                                Review and comment on the proposed ethical guidelines for all AI systems used by the city.
-                            </p>
-                            <button style="background-color: transparent; border: 1px solid #e5e7eb; color: #111827; padding: 0.375rem 0.75rem; border-radius: 0.375rem; font-size: 0.875rem;">
-                                Participate
-                            </button>
-                        </div>
-
-                        <div>
-                            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.25rem;">
-                                <h4 style="font-weight: 500;">AI Transparency Requirements</h4>
-                                <span class="badge badge-secondary">Open</span>
-                            </div>
-                            <p style="font-size: 0.875rem; color: #6b7280; margin-bottom: 0.5rem;">Closes August 3, 2023</p>
-                            <p style="font-size: 0.875rem; margin-bottom: 0.75rem;">
-                                Help define what information about AI systems should be publicly available.
-                            </p>
-                            <button style="background-color: transparent; border: 1px solid #e5e7eb; color: #111827; padding: 0.375rem 0.75rem; border-radius: 0.375rem; font-size: 0.875rem;">
-                                Participate
-                            </button>
-                        </div>
-                    </div>
+        <div class="card" style="cursor: pointer;">
+            <h4>Traffic Flow Simulator</h4>
+            <p>See how the traffic management AI optimizes signal timing</p>
+            <div style="text-align: center; margin: 1rem 0;">
+                <div style="background-color: #f1f5f9; border-radius: 9999px; padding: 1rem; display: inline-block; margin-bottom: 0.5rem;">
+                    <div style="background-color: #ef4444; height: 1rem; width: 1rem; border-radius: 9999px;"></div>
                 </div>
-
-                <div style="padding: 1.5rem; border: 1px solid #e5e7eb; border-radius: 0.5rem;">
-                    <h3 style="font-size: 1.25rem; font-weight: 600; margin-bottom: 1rem;">Policy Impact</h3>
-                    <div style="display: flex; flex-direction: column; gap: 1rem;">
-                        <div>
-                            <h4 style="font-weight: 500; margin-bottom: 0.25rem;">AI Procurement Guidelines</h4>
-                            <p style="font-size: 0.875rem; color: #6b7280; margin-bottom: 0.5rem;">Consultation closed: March 2023</p>
-                            <div style="display: flex; align-items: flex-start; gap: 0.5rem; margin-bottom: 0.25rem;">
-                                <span class="badge badge-green" style="margin-top: 0.125rem;">Implemented</span>
-                                <p style="font-size: 0.875rem;">
-                                    Citizen input led to stronger requirements for explainability and bias testing.
-                                </p>
-                            </div>
-                            <a href="#" style="font-size: 0.875rem; color: #dc2626; text-decoration: none;">View Results</a>
-                        </div>
-
-                        <div>
-                            <h4 style="font-weight: 500; margin-bottom: 0.25rem;">Facial Recognition Limitations</h4>
-                            <p style="font-size: 0.875rem; color: #6b7280; margin-bottom: 0.5rem;">Consultation closed: November 2022</p>
-                            <div style="display: flex; align-items: flex-start; gap: 0.5rem; margin-bottom: 0.25rem;">
-                                <span class="badge badge-yellow" style="margin-top: 0.125rem;">In Progress</span>
-                                <p style="font-size: 0.875rem;">
-                                    Policy being finalized based on strong citizen concerns about privacy.
-                                </p>
-                            </div>
-                            <a href="#" style="font-size: 0.875rem; color: #dc2626; text-decoration: none;">View Results</a>
-                        </div>
-                    </div>
-                </div>
+                <p style="font-size: 0.875rem; color: #6b7280;">Explore traffic patterns and signal optimization</p>
             </div>
-
-            <div style="background-color: #f3f4f6; padding: 1.5rem; border-radius: 0.5rem;">
-                <h3 style="font-size: 1.25rem; font-weight: 600; margin-bottom: 1rem;">Join the Citizen AI Advisory Board</h3>
-                <p style="margin-bottom: 1rem;">
-                    We're recruiting citizens to serve on Amsterdam's AI Advisory Board. Members meet quarterly to
-                    review AI initiatives and provide ongoing input on policy and implementation.
-                </p>
-                <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 1rem;">
-                    <span style="color: #6b7280;">🕔</span>
-                    <span style="font-size: 0.875rem; color: #6b7280;">Applications close June 30, 2023</span>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    with col2:
+        st.markdown("""
+        <div class="card" style="cursor: pointer;">
+            <h4>Fraud Detection Simulator</h4>
+            <p>Understand how the fraud detection system works</p>
+            <div style="text-align: center; margin: 1rem 0;">
+                <div style="background-color: #f1f5f9; border-radius: 9999px; padding: 1rem; display: inline-block; margin-bottom: 0.5rem;">
+                    <span style="font-size: 1.5rem;">⚠️</span>
                 </div>
-                <button style="background-color: #dc2626; color: white; padding: 0.75rem 1rem; border: none; border-radius: 0.375rem; font-weight: 500; display: flex; align-items: center; gap: 0.25rem;">
-                    <span>Learn More & Apply</span>
-                    <span>→</span>
-                </button>
+                <p style="font-size: 0.875rem; color: #6b7280;">Learn about risk factors and detection methods</p>
+            </div>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    with col3:
+        st.markdown("""
+        <div class="card" style="cursor: pointer;">
+            <h4>Energy Usage Simulator</h4>
+            <p>See how the energy optimization system works</p>
+            <div style="text-align: center; margin: 1rem 0;">
+                <div style="background-color: #f1f5f9; border-radius: 9999px; padding: 1rem; display: inline-block; margin-bottom: 0.5rem;">
+                    <div style="height: 1.5rem; width: 1.5rem; display: flex; align-items: center; justify-content: center;">
+                        <div style="background-color: #10b981; height: 0.75rem; width: 0.25rem; margin: 0 0.125rem; border-radius: 0.125rem;"></div>
+                        <div style="background-color: #10b981; height: 1rem; width: 0.25rem; margin: 0 0.125rem; border-radius: 0.125rem;"></div>
+                        <div style="background-color: #10b981; height: 1.25rem; width: 0.25rem; margin: 0 0.125rem; border-radius: 0.125rem;"></div>
+                        <div style="background-color: #10b981; height: 0.5rem; width: 0.25rem; margin: 0 0.125rem; border-radius: 0.125rem;"></div>
+                    </div>
+                </div>
+                <p style="font-size: 0.875rem; color: #6b7280;">Explore energy usage optimization in public buildings</p>
             </div>
         </div>
         """, unsafe_allow_html=True)
 
-def create_footer():
+# All questions page
+def all_questions_page():
+    st.markdown('<a href="/" style="display: inline-flex; align-items: center; margin-bottom: 1rem;"><span style="margin-right: 0.25rem;">←</span> Back to Overview</a>', unsafe_allow_html=True)
+    
     st.markdown("""
-    <div class="footer">
-        <div style="display: flex; flex-direction: column; gap: 1rem; justify-content: space-between; align-items: center; text-align: center;">
-            <div>
-                <div style="display: flex; align-items: center; gap: 0.5rem; justify-content: center; margin-bottom: 0.25rem;">
-                    <div style="background-color: #dc2626; color: white; padding: 0.25rem 0.5rem; border-radius: 0.375rem; font-weight: 700; font-size: 0.75rem;">A'dam</div>
-                    <span style="font-weight: 600; font-size: 0.875rem;">AI & Me</span>
-                </div>
-                <p style="font-size: 0.75rem; color: #6b7280;">A civic platform for AI transparency and citizen empowerment</p>
-            </div>
-            <div style="display: flex; flex-wrap: wrap; gap: 1rem; justify-content: center; font-size: 0.875rem;">
-                <a href="#" style="color: inherit; text-decoration: none; hover: underline;">Privacy Policy</a>
-                <a href="#" style="color: inherit; text-decoration: none; hover: underline;">Accessibility</a>
-                <a href="#" style="color: inherit; text-decoration: none; hover: underline;">Contact</a>
-                <a href="https://www.amsterdam.nl" target="_blank" style="color: inherit; text-decoration: none; hover: underline;">Gemeente Amsterdam</a>
+    <h1>Public Questions & Answers</h1>
+    <p>Questions from citizens about AI systems in Amsterdam</p>
+    """, unsafe_allow_html=True)
+    
+    # Filter options
+    systems = st.session_state.ai_systems
+    system_options = ["All Systems"] + list(systems['title'])
+    selected_system = st.selectbox("Filter by System", system_options)
+    
+    # Get questions
+    questions = st.session_state.questions
+    
+    if selected_system != "All Systems":
+        system_id = systems[systems['title'] == selected_system].iloc[0]['id']
+        questions = questions[questions['system_id'] == system_id]
+    
+    # Display questions
+    for _, question in questions.iterrows():
+        system_name = systems[systems['id'] == question['system_id']].iloc[0]['title']
+        
+        st.markdown(f"""
+        <div class="question-card">
+            <p class="question-text">{question['question']}</p>
+            <p class="answer-text">{question['answer']}</p>
+            <div style="display: flex; justify-content: space-between; margin-top: 0.5rem;">
+                <span class="department-badge">{system_name}</span>
+                <span class="question-date">{format_date(question['date'])}</span>
             </div>
         </div>
+        """, unsafe_allow_html=True)
+
+# All co-design sessions page
+def all_sessions_page():
+    st.markdown('<a href="/" style="display: inline-flex; align-items: center; margin-bottom: 1rem;"><span style="margin-right: 0.25rem;">←</span> Back to Overview</a>', unsafe_allow_html=True)
+    
+    st.markdown("""
+    <h1>Co-Design Sessions</h1>
+    <p>Help shape the future of AI in Amsterdam by participating in these sessions</p>
+    """, unsafe_allow_html=True)
+    
+    # Filter options
+    systems = st.session_state.ai_systems
+    system_options = ["All Systems"] + list(systems['title'])
+    selected_system = st.selectbox("Filter by System", system_options)
+    
+    # Get sessions
+    sessions = st.session_state.codesign_sessions
+    
+    if selected_system != "All Systems":
+        system_id = systems[systems['title'] == selected_system].iloc[0]['id']
+        sessions = sessions[sessions['system_id'] == system_id]
+    
+    # Display sessions
+    for _, session in sessions.iterrows():
+        system_name = systems[systems['id'] == session['system_id']].iloc[0]['title']
+        spots_class = "spots-available" if session['spots_left'] > 0 else "spots-full"
+        spots_text = f"{session['spots_left']} spots left" if session['spots_left'] > 0 else "Fully booked"
+        
+        st.markdown(f"""
+        <div class="session-card">
+            <h3>{session['title']}</h3>
+            <p>{session['description']}</p>
+            <p class="session-date">{session['date']} • {session['time']}</p>
+            <p>{session['location']}</p>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 1rem;">
+                <span class="department-badge">{system_name}</span>
+                <span class="{spots_class}">{spots_text}</span>
+            </div>
+        </div>
+        """, unsafe_allow_html=True)
+        
+        if session['spots_left'] > 0:
+            if st.button(f"Register for {session['title']}", key=f"register_{session['id']}"):
+                st.success("Thank you for registering! You will receive a confirmation email with details.")
+
+# System feedback page
+def system_feedback_page(system_id):
+    system = st.session_state.ai_systems[st.session_state.ai_systems['id'] == system_id].iloc[0]
+    
+    st.markdown('<a href="/" style="display: inline-flex; align-items: center; margin-bottom: 1rem;"><span style="margin-right: 0.25rem;">←</span> Back to Overview</a>', unsafe_allow_html=True)
+    
+    st.markdown(f"""
+    <h1>Submit Feedback for {system['title']}</h1>
+    <p>Your feedback helps us improve this system and ensure it serves all citizens fairly.</p>
+    """, unsafe_allow_html=True)
+    
+    # Feedback form
+    st.markdown("""
+    <div class="card">
+        <h3>Share Your Experience</h3>
+        <p>Tell us how this AI system has affected you or your community</p>
+    </div>
+    """, unsafe_allow_html=True)
+    
+    experience = st.text_area("Your Experience", placeholder="Describe how this AI system affected you or your community...", height=150)
+    
+    impact_type = st.radio(
+        "Impact Type",
+        ["Positive", "Negative", "Neutral", "Confusing", "Concerning"]
+    )
+    
+    st.markdown("<h3>What aspects of the system are you providing feedback on?</h3>", unsafe_allow_html=True)
+    
+    col1, col2 = st.columns(2)
+    
+    with col1:
+        transparency = st.checkbox("Transparency")
+        fairness = st.checkbox("Fairness")
+        accuracy = st.checkbox("Accuracy")
+    
+    with col2:
+        privacy = st.checkbox("Privacy")
+        usability = st.checkbox("Usability")
+        other = st.checkbox("Other")
+    
+    if other:
+        other_aspect = st.text_input("Please specify:")
+    
+    anonymous = st.checkbox("Submit anonymously")
+    
+    if not anonymous:
+        st.markdown("<p>Contact Information (optional)</p>", unsafe_allow_html=True)
+        
+        col1, col2 = st.columns(2)
+        with col1:
+            name = st.text_input("Name")
+        with col2:
+            email = st.text_input("Email")
+    
+    if st.button("Submit Feedback"):
+        if experience:
+            # In a real implementation, this would save to a database
+            new_id = len(st.session_state.feedback_data) + 1
+            new_feedback = {
+                "id": new_id,
+                "system_id": system_id,
+                "date": datetime.now().strftime("%Y-%m-%d"),
+                "sentiment": impact_type.lower(),
+                "feedback_text": experience,
+                "resolved": False
+            }
+            
+            # Add to DataFrame (in a real implementation, this would be saved to a database)
+            st.session_state.feedback_data = pd.concat([st.session_state.feedback_data, pd.DataFrame([new_feedback])], ignore_index=True)
+            
+            # Update feedback count for the system
+            system_idx = st.session_state.ai_systems[st.session_state.ai_systems['id'] == system_id].index[0]
+            st.session_state.ai_systems.at[system_idx, 'feedback_count'] += 1
+            
+            st.success("Thank you for your feedback! It will help us improve AI systems in Amsterdam.")
+        else:
+            st.error("Please describe your experience before submitting.")
+    
+    # Display feedback statistics
+    st.markdown("<h2>Feedback Statistics</h2>", unsafe_allow_html=True)
+    
+    system_feedback = st.session_state.feedback_data[st.session_state.feedback_data['system_id'] == system_id]
+    
+    if len(system_feedback) == 0:
+        st.info("No feedback data available for this system yet.")
+    else:
+        # Sentiment breakdown
+        sentiment_counts = system_feedback['sentiment'].value_counts()
+        
+        fig = px.pie(
+            names=sentiment_counts.index,
+            values=sentiment_counts.values,
+            title=f"Feedback Sentiment Distribution ({len(system_feedback)} reports)",
+            color=sentiment_counts.index,
+            color_discrete_map={
+                'positive': '#10b981',
+                'negative': '#ef4444',
+                'neutral': '#9ca3af',
+                'confused': '#f59e0b',
+                'concerned': '#3b82f6'
+            }
+        )
+        fig.update_traces(textposition='inside', textinfo='percent+label')
+        st.plotly_chart(fig, use_container_width=True)
+        
+        # Resolution rate
+        resolved_count = system_feedback['resolved'].sum()
+        resolution_rate = resolved_count / len(system_feedback) * 100
+        
+        st.markdown(f"""
+        <p>Resolution Rate: <strong>{resolution_rate:.1f}%</strong> ({resolved_count} out of {len(system_feedback)} reports)</p>
+        """, unsafe_allow_html=True)
+        
+        # Feedback over time
+        system_feedback['date'] = pd.to_datetime(system_feedback['date'])
+        feedback_by_date = system_feedback.groupby([pd.Grouper(key='date', freq='W')])['id'].count().reset_index()
+        feedback_by_date.columns = ['date', 'count']
+        
+        fig = px.line(
+            feedback_by_date,
+            x='date',
+            y='count',
+            title='Feedback Submissions Over Time',
+            labels={'date': 'Date', 'count': 'Number of Submissions'},
+            markers=True
+        )
+        st.plotly_chart(fig, use_container_width=True)
+
+# About page
+def about_page():
+    st.markdown('<a href="/" style="display: inline-flex; align-items: center; margin-bottom: 1rem;"><span style="margin-right: 0.25rem;">←</span> Back to Overview</a>', unsafe_allow_html=True)
+    
+    st.markdown("""
+    <h1>About AI & Me</h1>
+    <p>A civic platform empowering Amsterdam citizens to understand, question, and influence AI systems in their city.</p>
+    """, unsafe_allow_html=True)
+    
+    st.markdown("""
+    <div class="card">
+        <h3>Our Mission</h3>
+        <p>AI & Me is a public-facing platform that empowers citizens to:</p>
+        <ul>
+            <li>Understand how AI is used in their city</li>
+            <li>Question how it might affect them</li>
+            <li>Influence how it evolves through feedback and co-design</li>
+        </ul>
+        <p>We believe that AI systems should be transparent, accountable, and designed with input from the citizens they affect.</p>
+    </div>
+    """, unsafe_allow_html=True)
+    
+    st.markdown("""
+    <div class="card">
+        <h3>Key Features</h3>
+        
+        <h4>🔍 Human-Centered Explanation Pages</h4>
+        <p>Every algorithm in use is paired with a plain-language, illustrated explanation:</p>
+        <ul>
+            <li>What is it for?</li>
+            <li>How does it affect me?</li>
+            <li>What kind of data does it use?</li>
+            <li>What rights do I have?</li>
+        </ul>
+        <p>Available in multiple languages and accessible formats</p>
+        
+        <h4>🧠 Emotion-Aware Trust Indicators</h4>
+        <p>Visual indicators that show:</p>
+        <ul>
+            <li>Who audits the system</li>
+            <li>Whether bias testing was done</li>
+            <li>Whether citizens were consulted</li>
+            <li>Level of risk to human rights</li>
+        </ul>
+        <p>Similar to a "nutrition label" for AI</p>
+        
+        <h4>🗣️ "Tell Us What You Think" Feedback Module</h4>
+        <p>Citizens can anonymously:</p>
+        <ul>
+            <li>Report concerns</li>
+            <li>Ask questions</li>
+            <li>Share stories of how an algorithm affected them</li>
+        </ul>
+        <p>Feedback is publicly visible, and responses from the municipality are tracked and transparent</p>
+        
+        <h4>🧭 "Was This Clear?" Explainability Feedback</h4>
+        <p>After reading any explanation, users can rate:</p>
+        <ul>
+            <li>Clarity (Did it make sense?)</li>
+            <li>Care (Did it feel human or robotic?)</li>
+            <li>Usefulness (Did it help me understand my rights?)</li>
+        </ul>
+        <p>This builds a live metric of how explainability is perceived, not just delivered.</p>
+        
+        <h4>🧩 Civic AI Simulator</h4>
+        <p>Users can "test" a sample algorithm by inputting mock data to see:</p>
+        <ul>
+            <li>How decisions might change based on different inputs</li>
+            <li>What the system "considers" in its logic</li>
+        </ul>
+        <p>Designed to de-mystify black boxes without oversimplifying</p>
+    </div>
+    """, unsafe_allow_html=True)
+    
+    st.markdown("""
+    <div class="card">
+        <h3>Contact Us</h3>
+        <p>If you have questions, suggestions, or would like to get involved, please contact us at:</p>
+        <p><strong>Email:</strong> info@aiandme.amsterdam</p>
+        <p><strong>Address:</strong> Amsterdam City Hall, Amstel 1, 1011 PN Amsterdam</p>
     </div>
     """, unsafe_allow_html=True)
 
-# Main app
+# ===============================
+# 4. MAIN APP
+# ===============================
+
 def main():
-    # Create header
-    create_header()
+    # Load CSS
+    load_css()
     
-    # Navigation
-    page = st.sidebar.selectbox("Navigation", ["Home", "Understand", "Housing Allocation", "Question", "Influence"])
+    # Sidebar navigation
+    st.sidebar.title("Navigation")
     
-    # Display selected page
-    if page == "Home":
+    if st.sidebar.button("Home"):
+        st.experimental_set_query_params(page="home")
+    
+    if st.sidebar.button("AI Systems"):
+        st.experimental_set_query_params(page="home")
+    
+    if st.sidebar.button("Housing Simulator"):
+        st.experimental_set_query_params(page="simulator")
+    
+    if st.sidebar.button("Co-Design Sessions"):
+        st.experimental_set_query_params(page="all_sessions")
+    
+    if st.sidebar.button("Public Questions"):
+        st.experimental_set_query_params(page="all_questions")
+    
+    if st.sidebar.button("About"):
+        st.experimental_set_query_params(page="about")
+    
+    # Get query parameters
+    query_params = st.experimental_get_query_params()
+    page = query_params.get("page", ["home"])[0]
+    system_id = query_params.get("id", [None])[0]
+    
+    # Render the appropriate page
+    if page == "home":
         home_page()
-    elif page == "Understand":
-        understand_page()
-    elif page == "Housing Allocation":
-        housing_allocation_page()
-    elif page == "Question":
-        question_page()
-    elif page == "Influence":
-        influence_page()
+    elif page == "system_details" and system_id:
+        system_details_page(int(system_id))
+    elif page == "system_feedback" and system_id:
+        system_feedback_page(int(system_id))
+    elif page == "simulator":
+        housing_simulator_page()
+    elif page == "all_questions":
+        all_questions_page()
+    elif page == "all_sessions":
+        all_sessions_page()
+    elif page == "about":
+        about_page()
+    else:
+        home_page()
     
-    # Create footer
-    create_footer()
+    # Footer
+    st.markdown("""
+    <div class="footer">
+        <p>AI & Me: Citizen Empowerment Platform for AI Governance</p>
+        <p>© 2023 Gemeente Amsterdam | <a href="/?page=about">About</a> | <a href="#">Privacy Policy</a> | <a href="#">Accessibility</a></p>
+    </div>
+    """, unsafe_allow_html=True)
 
 if __name__ == "__main__":
     main()
