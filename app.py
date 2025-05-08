@@ -1,6 +1,3 @@
-# AI_and_Me_Platform.py
-# Streamlit application for AI & Me: Citizen Empowerment Platform
-
 import streamlit as st
 from streamlit_option_menu import option_menu
 import pandas as pd
